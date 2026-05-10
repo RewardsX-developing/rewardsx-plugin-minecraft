@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>net.R_Developing</groupId>
-    <artifactId>rewardads</artifactId>
-    <version>2026.04.30</version>
+    <artifactId>RewardsX-Velocity</artifactId>
+    <version>2026.05.09</version>
     <packaging>jar</packaging>
 
-    <name>rewardads</name>
+    <name>RewardsX</name>
 
     <properties>
         <java.version>17</java.version>
@@ -106,15 +106,15 @@
                             <relocations>
                                 <relocation>
                                     <pattern>okhttp3</pattern>
-                                    <shadedPattern>net.R_Developing.rewardads.libs.okhttp3</shadedPattern>
+                                    <shadedPattern>net.R_Developing.rewardsx.libs.okhttp3</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>okio</pattern>
-                                    <shadedPattern>net.R_Developing.rewardads.libs.okio</shadedPattern>
+                                    <shadedPattern>net.R_Developing.rewardsx.libs.okio</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.google.gson</pattern>
-                                    <shadedPattern>net.R_Developing.rewardads.libs.gson</shadedPattern>
+                                    <shadedPattern>net.R_Developing.rewardsx.libs.gson</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>

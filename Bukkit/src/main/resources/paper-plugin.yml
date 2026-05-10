@@ -1,8 +1,8 @@
-name: RewardADs
-main: net.r_developing.rewardads.Main
-version: 2026.04.30
+name: RewardsX
+main: net.r_developing.rewardsx.Main
+version: 2026.05.09
 api-version: '1.19'
-description: RewardADs plugin for Paper
+description: RewardsX Minecraft plugin for Paper
 authors:
   - R_Developing
 

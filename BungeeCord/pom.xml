@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>net.R_Developing</groupId>
-    <artifactId>rewardads</artifactId>
-    <version>2026.04.30</version>
+    <artifactId>RewardsX-Bungeecord</artifactId>
+    <version>2026.05.09</version>
     <packaging>jar</packaging>
-    <name>rewardads</name>
+    <name>RewardsX</name>
 
     <properties>
         <java.version>21</java.version>
@@ -93,13 +93,6 @@
             <groupId>net.kyori</groupId>
             <artifactId>adventure-platform-bungeecord</artifactId>
             <version>4.3.2</version>
-        </dependency>
-        <dependency>
-            <groupId>net.rewardsxdev</groupId>
-            <artifactId>rewardsx-api</artifactId>
-            <version>1.0.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/RewardsX-api-1.0.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

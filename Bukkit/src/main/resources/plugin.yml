@@ -1,7 +1,7 @@
-name: RewardADs
-version: '2026.04.30'
-main: net.r_developing.rewardads.Main
-description: RewardADs plugin spigot
+name: RewardsX
+version: '2026.05.09'
+main: net.r_developing.rewardsx.Main
+description: RewardsX Minecraft Plugin for Spigot
 authors:
   - R_Developing
 softdepend: [PlaceholderAPI]

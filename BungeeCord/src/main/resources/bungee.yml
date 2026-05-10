@@ -1,5 +1,5 @@
-name: RewardADs
-version: '2026.04.30'
-main: net.R_Developing.rewardADsBungeeCord.Main
+name: RewardsX
+version: '2026.05.09'
+main: net.R_Developing.rewardsx.Main
 author: R_Developing
-description: RewardADs main plugin for BungeeCord
+description: RewardsX Minecraft plugin for BungeeCord
