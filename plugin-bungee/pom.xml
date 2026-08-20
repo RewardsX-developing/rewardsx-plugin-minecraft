@@ -46,7 +46,7 @@
     <dependencies>
         <dependency>
             <groupId>net.r_developing.rewardsx</groupId>
-            <artifactId>plugin-bungee</artifactId>
+            <artifactId>api</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
