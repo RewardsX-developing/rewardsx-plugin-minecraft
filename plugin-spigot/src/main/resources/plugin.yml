@@ -1,0 +1,7 @@
+name: RewardsX
+version: '${project.version}'
+main: net.r_developing.rewardsx.Plugin
+description: RewardsX Minecraft Plugin for Spigot
+authors:
+  - R_Developing
+softdepend: [PlaceholderAPI]

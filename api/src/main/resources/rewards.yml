@@ -1,0 +1,11 @@
+# Pro tip: Use PlaceholderAPI in your Spigot/Paper/Purpur commands to unlock dynamic, customizable content.
+
+!!str REWARD_ID_1: # Took from https://dash.rewardsx.net
+  commands:
+    - "give %player% diamond 5"
+    - "broadcast %player% received 5 diamonds!"
+
+!!str REWARD_ID_2: # Took from https://dash.rewardsx.net
+  commands:
+    - "give %player% pumpkin 100"
+    - "broadcast %player% received 100 pumpkins!"

@@ -1,0 +1,5 @@
+name: RewardsX
+version: '${project.version}'
+main: net.r_developing.rewardsx.Plugin
+description: RewardsX Minecraft Plugin for BungeeCord
+author: R_Developing

@@ -1,0 +1,9 @@
+{
+  "id":"rewardsx",
+  "name":"RewardsX",
+  "version":"2026.08.30",
+  "description":"RewardsX Minecraft plugin for Velocity",
+  "authors":["R_Developing"],
+  "dependencies":[],
+  "main":"net.r_developing.rewardsx.Plugin"
+}
