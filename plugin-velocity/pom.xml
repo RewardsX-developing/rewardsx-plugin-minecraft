@@ -4,29 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>net.r_developing.rewardsx</groupId>
-    <artifactId>RewardsX</artifactId>
-    <version>2026.08.18</version>
-    <packaging>pom</packaging>
+    <parent>
+        <groupId>net.r_developing.rewardsx</groupId>
+        <artifactId>RewardsX</artifactId>
+        <version>2026.08.18</version>
+    </parent>
 
-    <name>RewardsX</name>
-
-    <modules>
-        <module>api</module>
-        <module>plugin-spigot</module>
-        <module>plugin-bungee</module>
-        <module>plugin-velocity</module>
-    </modules>
-
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <paper.version>1.21.4-R0.1-SNAPSHOT</paper.version>
-        <bungee.version>1.21-R0.1-SNAPSHOT</bungee.version>
-        <velocity.version>3.4.0-SNAPSHOT</velocity.version>
-        <lombok.version>1.18.32</lombok.version>
-    </properties>
+    <artifactId>plugin-velocity</artifactId>
+    <packaging>jar</packaging>
 
     <repositories>
         <repository>
@@ -60,14 +45,35 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
+            <groupId>net.r_developing.rewardsx</groupId>
+            <artifactId>plugin-velocity</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Velocity API -->
+        <dependency>
+            <groupId>com.velocitypowered</groupId>
+            <artifactId>velocity-api</artifactId>
+            <version>3.1.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../libs/velocity-api-3.1.1.jar</systemPath>
+        </dependency>
+        <!-- SnakeYAML per VelocityYamlConfig -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>2.2</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -82,8 +88,27 @@
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
+                        <!-- Genera automaticamente velocity-plugin.json da @Plugin -->
+                        <path>
+                            <groupId>com.velocitypowered</groupId>
+                            <artifactId>velocity-api</artifactId>
+                            <version>${velocity.version}</version>
+                        </path>
                     </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.2</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
