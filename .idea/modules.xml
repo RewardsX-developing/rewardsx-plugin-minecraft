@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/api/api.iml" filepath="$PROJECT_DIR$/api/api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugin-bungee/plugin-bungee.iml" filepath="$PROJECT_DIR$/plugin-bungee/plugin-bungee.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugin-spigot/plugin-spigot.iml" filepath="$PROJECT_DIR$/plugin-spigot/plugin-spigot.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugin-velocity/plugin-velocity.iml" filepath="$PROJECT_DIR$/plugin-velocity/plugin-velocity.iml" />
+    </modules>
+  </component>
+</project>

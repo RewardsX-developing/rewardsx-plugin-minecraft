@@ -51,6 +51,16 @@ public class Platform {
         cachedValidation = null;
         lastValidationTime = 0;
 
+        boolean isProxyMode = config.getMainConfig().getBoolean("proxy", false);
+        boolean isBungee = (adapter.type() == PlatformAdapter.Type.BUNGEECORD || adapter.type() == PlatformAdapter.Type.VELOCITY);
+
+        if (isBungee || (!isProxyMode && adapter.type() == PlatformAdapter.Type.SPIGOT)) {
+            adapter.registerCommandsAndEvents();
+        } else {
+            // Spigot in proxy-mode: non registrare comandi
+            adapter.getLogger().info("Running in proxy backend mode: commands handled by Bungee.");
+        }
+
         isValid(valid -> {
             if(valid) {
                 Map<String, Object> payload = new HashMap<>();
@@ -59,22 +69,10 @@ public class Platform {
                 api.send("verifyplatform", payload, res -> {});
                 fetcher.start();
 
-                boolean isProxyMode = config.getMainConfig().getBoolean("proxy", false);
-                boolean isBungee = (adapter.type() == PlatformAdapter.Type.BUNGEECORD || adapter.type() == PlatformAdapter.Type.VELOCITY);
-
                 adapter.getLogger().info(toAnsi(String.format(messager.get("welcome"), getName())));
 
                 // Astratto
                 adapter.runTaskLater(() -> version.checkVersion(null), 100L);
-
-                // Deleghiamo la registrazione di comandi ed eventi (e GUI) al modulo specifico
-                if (isBungee || (!isProxyMode && adapter.type() == PlatformAdapter.Type.SPIGOT)) {
-                    adapter.registerCommandsAndEvents();
-                } else {
-                    // Spigot in proxy-mode: non registrare comandi
-                    adapter.getLogger().info("Running in proxy backend mode: commands handled by Bungee.");
-                }
-
             } else {
                 adapter.getLogger().info(toAnsi(messager.get("configurePlatform")));
             }
@@ -89,9 +87,6 @@ public class Platform {
     }
     public boolean isTranslator() {
         return config.getMainConfig().getBoolean("translator");
-    }
-    public boolean isAllowedShowingConnectMessageOnJoin() {
-        return config.getMainConfig().getBoolean("show_connect_message_on_join");
     }
     public boolean isRewardsXCommandsEnabled() {
         return config.getMainConfig().getBoolean("enable_commands");

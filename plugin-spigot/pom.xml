@@ -40,7 +40,10 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
-
+        <repository>
+            <id>me.clip</id>
+            <url>https://mvnrepository.com/artifact/me.clip/placeholderapi</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -59,7 +62,7 @@
         <dependency>
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
-            <version>2.11.1</version>
+            <version>2.11.6</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

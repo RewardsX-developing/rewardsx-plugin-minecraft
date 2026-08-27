@@ -1,0 +1,12 @@
+net\r_developing\rewardsx\config\BungeeYamlConfig.class
+net\r_developing\rewardsx\platform\BungeePlatformAdapter.class
+net\r_developing\rewardsx\gui\BungeeDummyGUI.class
+net\r_developing\rewardsx\logger\BungeeLogger.class
+net\r_developing\rewardsx\Plugin.class
+net\r_developing\rewardsx\BungeeRewardsxCore.class
+net\r_developing\rewardsx\player\BungeePlayer.class
+net\r_developing\rewardsx\platform\BungeeSchedulerWrapper.class
+net\r_developing\rewardsx\commands\Commands.class
+net\r_developing\rewardsx\platform\BungeePlatformPlugin.class
+net\r_developing\rewardsx\platform\BungeeServer.class
+net\r_developing\rewardsx\listener\BungeePluginMessageListener.class

@@ -57,7 +57,7 @@ public class CoreCommands {
         this.isCommandsEnabled = platform.isRewardsXCommandsEnabled();
     }
 
-    public boolean executeConsole(String senderName, String[] args) {
+    public boolean executeConsole(String name, String[] args) {
 
         if (args.length == 0) {
             sendMinimalHelpConsole();
@@ -172,7 +172,7 @@ public class CoreCommands {
 
         List<String> suggestions = new ArrayList<>(Arrays.asList("reload", "version"));
         if (platformValid) {
-            suggestions.addAll(Arrays.asList("buy"));
+            suggestions.add("buy");
         }
 
         return suggestions.stream()

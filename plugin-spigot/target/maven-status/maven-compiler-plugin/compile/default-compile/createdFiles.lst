@@ -1,0 +1,14 @@
+net\r_developing\rewardsx\platform\BukkitSchedulerWrapper.class
+net\r_developing\rewardsx\Plugin.class
+net\r_developing\rewardsx\SpigotRewardsxCore.class
+net\r_developing\rewardsx\platform\BukkitServer.class
+net\r_developing\rewardsx\player\SpigotPlayerOffline.class
+net\r_developing\rewardsx\logger\BukkitLogger.class
+net\r_developing\rewardsx\platform\BukkitCommandExecutor.class
+net\r_developing\rewardsx\commands\Commands.class
+net\r_developing\rewardsx\config\BukkitYamlConfig.class
+net\r_developing\rewardsx\gui\RewardsGUI.class
+net\r_developing\rewardsx\platform\BukkitPlatformPlugin.class
+net\r_developing\rewardsx\listener\SpigotProxyListener.class
+net\r_developing\rewardsx\platform\BukkitPlatformAdapter.class
+net\r_developing\rewardsx\player\SpigotPlayer.class

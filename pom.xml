@@ -21,9 +21,14 @@
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <lombok.version>1.18.42</lombok.version>
         <paper.version>1.21.4-R0.1-SNAPSHOT</paper.version>
-        <bungee.version>1.21-R0.1-SNAPSHOT</bungee.version>
-        <lombok.version>1.18.32</lombok.version>
+        <spigot.version>1.12.2-R0.1-SNAPSHOT</spigot.version>
+        <bungee.version>1.21-R0.4-SNAPSHOT</bungee.version>
+        <velocity.version>3.4.0-SNAPSHOT</velocity.version>
+        <papi.version>2.11.6</papi.version>
+        <adventure.version>4.23.0</adventure.version>
     </properties>
 
     <repositories>
@@ -33,19 +38,21 @@
         </repository>
         <repository>
             <id>placeholderapi</id>
-            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+            <url>https://repo.extendedclip.com/releases/</url>
         </repository>
         <repository>
-            <id>sonatype</id>
-            <url>https://oss.sonatype.org/content/groups/public/</url>
-        </repository>
-        <repository>
-            <id>bungeecord-repo</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>central-snapshots</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+            <releases><enabled>false</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
         </repository>
         <repository>
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>papermc-snapshots</id>
+            <url>https://repo.papermc.io/repository/maven-snapshots/</url>
         </repository>
         <repository>
             <id>jitpack.io</id>

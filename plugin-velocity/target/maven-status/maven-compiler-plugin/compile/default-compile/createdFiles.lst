@@ -1,0 +1,13 @@
+net\r_developing\rewardsx\platform\VelocityPlatformPlugin.class
+net\r_developing\rewardsx\gui\VelocityDummyGUI.class
+net\r_developing\rewardsx\config\VelocityYamlConfig.class
+net\r_developing\rewardsx\player\VelocityPlayer.class
+net\r_developing\rewardsx\VelocityRewardsxCore.class
+net\r_developing\rewardsx\Plugin.class
+net\r_developing\rewardsx\listener\VelocityPluginMessageListener.class
+net\r_developing\rewardsx\logger\VelocityLogger.class
+net\r_developing\rewardsx\platform\VelocityServer.class
+velocity-plugin.json
+net\r_developing\rewardsx\commands\Commands.class
+net\r_developing\rewardsx\platform\VelocitySchedulerWrapper.class
+net\r_developing\rewardsx\platform\VelocityPlatformAdapter.class
