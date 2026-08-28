@@ -26,7 +26,7 @@
         <paper.version>1.21.4-R0.1-SNAPSHOT</paper.version>
         <spigot.version>1.12.2-R0.1-SNAPSHOT</spigot.version>
         <bungee.version>1.21-R0.4-SNAPSHOT</bungee.version>
-        <velocity.version>3.4.0-SNAPSHOT</velocity.version>
+        <velocity.version>3.1.1</velocity.version>
         <papi.version>2.11.6</papi.version>
         <adventure.version>4.23.0</adventure.version>
     </properties>

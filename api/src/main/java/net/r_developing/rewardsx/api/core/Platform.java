@@ -114,7 +114,7 @@ public class Platform {
         }
 
         Map<String, Object> payload = new HashMap<>();
-        api.send("getplatform", payload, response -> {
+        api.send("platform", payload, response -> {
             if(response == null) {
                 System.err.println("Request failed or returned null");
                 callback.accept(false);
