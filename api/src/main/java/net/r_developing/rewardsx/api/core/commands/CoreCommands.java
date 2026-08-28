@@ -24,16 +24,15 @@ public class CoreCommands {
     private final Fetcher fetcher;
     private final Buy buy;
     private final PlatformLogger logger;
-    private final ProxySender proxySender; // Aggiunto per comunicare proxy -> backend
+    private final ProxySender proxySender;
 
     private volatile boolean platformValid = false;
     private volatile boolean isProxy = false;
     private boolean isCommandsEnabled = true;
 
-
     public CoreCommands(PlatformGUI rewardsGUI, Messager messager, Config config, Version version,
                         Platform platform, Fetcher fetcher, Buy buy,
-                        PlatformLogger logger, ProxySender proxySender) { // Aggiunto proxySender
+                        PlatformLogger logger, ProxySender proxySender) {
         this.rewardsGUI = rewardsGUI;
         this.messager = messager;
         this.config = config;
@@ -74,6 +73,10 @@ public class CoreCommands {
                 logger.info("Config reloaded from console.");
                 return true;
 
+            case "connect":
+                logger.warning("The 'connect' command is only available for players in-game.");
+                return true;
+
             case "version":
             case "ver":
                 logger.info("Running version: " + version.currentVersion());
@@ -92,7 +95,7 @@ public class CoreCommands {
     }
 
     public boolean execute(RPlayer sender, String[] args) {
-        boolean limitedMode = !platformValid; // isProxy non è più un limite, ma una feature
+        boolean limitedMode = !platformValid;
 
         if(!isCommandsEnabled){
             sender.sendMessage(ChatColor.RED + "Commands are disabled. Enable it on config!");
@@ -126,10 +129,38 @@ public class CoreCommands {
             case "ver":
                 if (hasPermission(sender, "rewardsx.version")) {
                     sender.sendMessage(String.format(messager.get("currentVersion"), version.currentVersion()));
-                    version.checkVersion(sender); // Se serve che mandi un messaggio al player
+                    version.checkVersion(sender);
                 } else {
                     sender.sendMessage(messager.get("noPermission"));
                 }
+                break;
+
+            case "connect":
+                if (limitedMode) {
+                    sender.sendMessage(messager.get("platformNotReady"));
+                    return true;
+                }
+
+                if (!sender.isPlayer()) {
+                    sender.sendMessage(messager.get("onlyPlayer"));
+                    return true;
+                }
+
+                if (args.length != 2) {
+                    sender.sendMessage(ChatColor.RED + "Usage: /rewardsx connect <code>");
+                    return true;
+                }
+
+                String code = args[1].toUpperCase();
+                sender.sendMessage(ChatColor.YELLOW + "Connecting your account to web interface...");
+
+                fetcher.linkAccount(sender.getUniqueId(), sender.getPlayerName(), code).thenAccept(success -> {
+                    if (success) {
+                        sender.sendMessage(ChatColor.GREEN + "Account connected successfully!");
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "Invalid or expired connection code. Please generate a new one on the web interface.");
+                    }
+                });
                 break;
 
             case "buy":
@@ -140,15 +171,11 @@ public class CoreCommands {
                 }
                 if (sender.isPlayer()) {
                     if (args.length > 1) {
-                        buy.send(sender, args[1]); // Compra una specifica reward bypassando la GUI
+                        buy.send(sender, args[1]);
                     } else {
-                        // LA MAGIA DEL CROSS-PLATFORM:
                         if (isProxy) {
-                            // Se siamo su BungeeCord, diciamo al server Spigot di aprire la GUI
                             proxySender.sendCommand(sender, "OPENGUI", "");
-
                         } else {
-                            // Se siamo su Spigot, apriamo direttamente la GUI
                             rewardsGUI.open(sender);
                         }
                     }
@@ -173,6 +200,7 @@ public class CoreCommands {
         List<String> suggestions = new ArrayList<>(Arrays.asList("reload", "version"));
         if (platformValid) {
             suggestions.add("buy");
+            suggestions.add("connect");
         }
 
         return suggestions.stream()
@@ -190,6 +218,7 @@ public class CoreCommands {
         sender.sendMessage("§8--- §9RewardsX Help §8[§b" + platformName + "§8] ---");
         sender.sendMessage("");
         sender.sendMessage("§8§l• §b/rewardsx buy §f[name] §8- §7Open rewards GUI");
+        sender.sendMessage("§8§l• §b/rewardsx connect §f<code> §8- §7Link account to web interface");
         sender.sendMessage("§8§l• §b/rewardsx reload §8- §7Reload config");
         sender.sendMessage("§8§l• §b/rewardsx version §8- §7Check version");
     }

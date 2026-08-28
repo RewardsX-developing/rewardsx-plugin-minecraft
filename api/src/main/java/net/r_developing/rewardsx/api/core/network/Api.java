@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public class Api {
-    private static final String BASE_URL = "https://proxy.rewardsx.net/v1/";
+    private static final String BASE_URL = "https://api.rewardsx.net/v2/";
     private final OkHttpClient client;
     @Setter
     @Getter

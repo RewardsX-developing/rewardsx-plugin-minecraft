@@ -13,6 +13,7 @@ import net.r_developing.rewardsx.api.core.platform.PlatformAdapter;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -103,6 +104,26 @@ public class Fetcher {
                 }
             }
         }, 0L, intervalTicks);
+    }
+
+    public CompletableFuture<Boolean> linkAccount(UUID uuid, String username, String code) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("uuid", uuid.toString());
+        payload.put("username", username);
+        payload.put("code", code);
+
+        // This relies on your existing api.send structure hitting your Next.js backend
+        api.send("linkaccount", payload, result -> {
+            if (result != null && "true".equalsIgnoreCase(String.valueOf(result.get("success")))) {
+                future.complete(true);
+            } else {
+                future.complete(false);
+            }
+        });
+
+        return future;
     }
 
     public List<Map<String, String>> getRewardsList() {
