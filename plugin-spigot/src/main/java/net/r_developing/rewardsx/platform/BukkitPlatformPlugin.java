@@ -1,12 +1,13 @@
 package net.r_developing.rewardsx.platform;
 
+import net.r_developing.rewardsx.Plugin;
+import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
 import net.r_developing.rewardsx.api.core.platform.PlatformPlugin;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class BukkitPlatformPlugin implements PlatformPlugin {
-    private final JavaPlugin plugin;
+    private final Plugin plugin;
 
-    public BukkitPlatformPlugin(JavaPlugin plugin) {
+    public BukkitPlatformPlugin(Plugin plugin) {
         this.plugin = plugin;
     }
 
@@ -23,6 +24,11 @@ public class BukkitPlatformPlugin implements PlatformPlugin {
     @Override
     public Object getPlugin() {
         return plugin;
+    }
+
+    @Override
+    public RewardPollingTask getPollingTask() {
+        return plugin.getPollingTask();
     }
 
 }

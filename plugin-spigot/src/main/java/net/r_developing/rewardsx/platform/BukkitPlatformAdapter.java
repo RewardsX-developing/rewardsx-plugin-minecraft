@@ -1,5 +1,6 @@
 package net.r_developing.rewardsx.platform;
 
+import net.r_developing.rewardsx.Plugin;
 import net.r_developing.rewardsx.api.core.gui.PlatformGUI;
 import net.r_developing.rewardsx.api.core.platform.PlatformAdapter;
 import net.r_developing.rewardsx.api.core.platform.PlatformLogger;
@@ -22,7 +23,7 @@ import java.lang.reflect.Field;
 import java.nio.file.Path;
 
 public class BukkitPlatformAdapter implements PlatformAdapter {
-    private final JavaPlugin plugin;
+    private final Plugin plugin;
     private final PlatformLogger logger;
     private final PlatformScheduler scheduler;
 
@@ -30,7 +31,7 @@ public class BukkitPlatformAdapter implements PlatformAdapter {
     private CoreCommands coreCommands;
     private AbstractProxyListener coreProxyListener;
 
-    public BukkitPlatformAdapter(JavaPlugin plugin, PlatformLogger logger) {
+    public BukkitPlatformAdapter(Plugin plugin, PlatformLogger logger) {
         this.plugin = plugin;
         this.logger = logger;
         this.scheduler = new BukkitSchedulerWrapper(plugin);

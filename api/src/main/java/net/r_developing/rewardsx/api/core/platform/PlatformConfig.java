@@ -10,9 +10,9 @@ public interface PlatformConfig {
     Set<String> getKeys(boolean b);
     void reload();
 
-    void set(String string, String userId);
+    void set(String path, String value);
 
-    void set(String string, Object String);
+    void set(String path, Object value);
 
     void save();
 
@@ -21,4 +21,6 @@ public interface PlatformConfig {
     Object get(String key);
 
     boolean getBoolean(String debug);
+
+    int getInt(String path, int i);
 }

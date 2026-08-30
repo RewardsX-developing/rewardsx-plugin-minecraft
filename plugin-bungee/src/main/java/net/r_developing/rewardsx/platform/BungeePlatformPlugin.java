@@ -1,6 +1,7 @@
 package net.r_developing.rewardsx.platform;
 
-import net.md_5.bungee.api.plugin.Plugin;
+import net.r_developing.rewardsx.Plugin;
+import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
 import net.r_developing.rewardsx.api.core.platform.PlatformPlugin;
 
 public class BungeePlatformPlugin implements PlatformPlugin {
@@ -23,5 +24,10 @@ public class BungeePlatformPlugin implements PlatformPlugin {
     @Override
     public Object getPlugin() {
         return plugin;
+    }
+
+    @Override
+    public RewardPollingTask getPollingTask() {
+        return plugin.getPollingTask();
     }
 }

@@ -7,9 +7,11 @@ import net.r_developing.rewardsx.api.core.config.Config;
 import net.r_developing.rewardsx.api.core.gui.PlatformGUI;
 import net.r_developing.rewardsx.api.core.network.Api;
 import net.r_developing.rewardsx.api.core.network.Fetcher;
+import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
 import net.r_developing.rewardsx.api.core.platform.*;
 import net.r_developing.rewardsx.api.core.proxy.AbstractProxyListener;
 import net.r_developing.rewardsx.api.core.proxy.ProxySender;
+import net.r_developing.rewardsx.api.core.rewards.RewardFetcher;
 import net.r_developing.rewardsx.api.core.updater.Version;
 import net.r_developing.rewardsx.api.core.commands.CoreCommands;
 import net.r_developing.rewardsx.api.core.language.Messager;
@@ -29,6 +31,7 @@ public abstract class RewardsXCore {
     protected Fetcher fetcher;
     protected Buy buy;
     protected Version version;
+    protected RewardPollingTask pollingTask;
 
     // --- Dipendenze iniettate dalle sottoclassi ---
     protected abstract PlatformLogger getPlatformLogger();
@@ -47,9 +50,10 @@ public abstract class RewardsXCore {
     protected abstract ProxySender getProxySender();
     protected abstract PlatformCommandExecutor getCommandExecutor();
 
-    // Metodo astratto per creare la GUI e il listener
     protected abstract PlatformGUI createGui();
     protected abstract AbstractProxyListener getCoreProxyListener();
+
+    protected abstract RewardPollingTask getPollingTask();
 
     public void onEnable() {
         getPlatformLogger().info("Initializing RewardsX Core...");
@@ -109,7 +113,11 @@ public abstract class RewardsXCore {
                     getScheduler(),
                     getCommandExecutor()
             );
+
+            RewardFetcher rewardFetcher = new RewardFetcher(getApi(), getPlatformLogger(), buy);
+
             fetcher.setBuy(buy);
+            fetcher.setRewardFetcher(rewardFetcher);
 
             // 7. Inizializza la GUI
             this.rewardsGUI = createGui();
@@ -132,6 +140,14 @@ public abstract class RewardsXCore {
 
             // 10. INIETTA TUTTE LE DIPENDENZE COMPLESSIVE NELL'ADAPTER
             getAdapter().setupDependencies(rewardsGUI, coreCommands, getCoreProxyListener());
+
+            this.pollingTask = new RewardPollingTask(
+                    getScheduler(),
+                    rewardFetcher,
+                    this.config,
+                    this.buy,
+                    this.fetcher.getInFlight()
+            );
 
             // 11. Avvia la validazione della piattaforma (che chiama adapter.registerCommandsAndEvents())
             platform.checkAndStart(fetcher, messager, version);

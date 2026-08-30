@@ -40,6 +40,12 @@ public class BukkitYamlConfig implements PlatformConfig {
     }
 
     @Override
+    public int getInt(String path, int i) {
+        return config.getInt(path, i);
+    }
+
+
+    @Override
     public boolean getBoolean(String path, boolean bool) {
         return config.getBoolean(path, bool);
     }
@@ -74,7 +80,7 @@ public class BukkitYamlConfig implements PlatformConfig {
     }
 
     @Override
-    public void set(String string, String userId) {
-
+    public void set(String path, String value) {
+        config.set(path, value);
     }
 }

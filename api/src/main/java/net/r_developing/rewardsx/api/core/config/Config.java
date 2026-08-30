@@ -15,7 +15,6 @@ public class Config {
     private final PlatformAdapter adapter;
     private final PlatformLogger logger;
 
-    // POJO per i valori di default (opzionali, se li usi per checkMissing)
     private final Object mainConfigDefaults;
     private final Object messagesConfigDefaults;
 
@@ -39,7 +38,7 @@ public class Config {
 
         this.rServer = server;
         this.adapter = adapter;
-        this.logger = adapter.getLogger(); // Usiamo il logger dall'adapter
+        this.logger = adapter.getLogger();
 
         this.mainConfigDefaults = mainConfigDefaults;
         this.messagesConfigDefaults = messagesConfigDefaults;
@@ -59,8 +58,6 @@ public class Config {
             }
         }
     }
-
-    // ... (metodi saveUserId, getUserId, getUUIDById, getPlayerById, getAllUserIds, removeUserId, reloadConfigs rimangono invariati) ...
 
     public void saveUserId(UUID playerUUID, String userId) {
         if (userDataConfig == null) return;
@@ -121,8 +118,13 @@ public class Config {
         checkMissing();
     }
 
+    public void setPlatformCredentials(String path, String secretKey) {
+        if (mainConfig == null) return;
+        mainConfig.set(path, secretKey);
+        mainConfig.save();
+    }
+
     private void checkMissing() {
-        // Controllo Main Config
         if (mainConfigDefaults != null) {
             boolean mainUpdated = checkMissingFields(mainConfigDefaults.getClass(), mainConfigDefaults, mainConfig);
             if (mainUpdated) {
@@ -131,7 +133,6 @@ public class Config {
             }
         }
 
-        // Controllo Messages Config
         if (messagesConfigDefaults != null) {
             boolean msgsUpdated = checkMissingFields(messagesConfigDefaults.getClass(), messagesConfigDefaults, messagesConfig);
             if (msgsUpdated) {

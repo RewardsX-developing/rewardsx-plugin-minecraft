@@ -57,6 +57,11 @@ public class BungeeYamlConfig implements PlatformConfig {
     }
 
     @Override
+    public int getInt(String path, int i) {
+        return config.getInt(path, i);
+    }
+
+    @Override
     public boolean getBoolean(String path, boolean def) {
         return config.getBoolean(path, def);
     }
@@ -116,8 +121,6 @@ public class BungeeYamlConfig implements PlatformConfig {
 
     @Override
     public void set(String path, String userId) {
-        // Se la tua interfaccia PlatformConfig richiede questo overload specifico,
-        // puoi semplicemente delegare al set generico:
         config.set(path, userId);
     }
 }

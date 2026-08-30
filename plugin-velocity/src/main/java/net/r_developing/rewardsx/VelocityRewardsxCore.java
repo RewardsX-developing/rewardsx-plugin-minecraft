@@ -4,6 +4,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import net.r_developing.rewardsx.api.core.RewardsXCore;
 import net.r_developing.rewardsx.api.core.gui.PlatformGUI;
 import net.r_developing.rewardsx.api.core.network.Api;
+import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
 import net.r_developing.rewardsx.api.core.network.Translator;
 import net.r_developing.rewardsx.api.core.platform.*;
 import net.r_developing.rewardsx.api.core.proxy.AbstractProxyListener;
@@ -11,6 +12,7 @@ import net.r_developing.rewardsx.api.core.proxy.ProxySender;
 import net.r_developing.rewardsx.config.VelocityYamlConfig;
 import net.r_developing.rewardsx.gui.VelocityDummyGUI;
 import net.r_developing.rewardsx.logger.VelocityLogger;
+import net.r_developing.rewardsx.platform.VelocityCommandExecutor;
 import net.r_developing.rewardsx.platform.VelocityPlatformAdapter;
 import net.r_developing.rewardsx.platform.VelocitySchedulerWrapper;
 import net.r_developing.rewardsx.platform.VelocityServer;
@@ -97,14 +99,12 @@ public class VelocityRewardsxCore extends RewardsXCore {
 
     @Override
     protected ProxySender getProxySender() {
-        // Manda i plugin messages via Plugin Channels ai backend Spigot da Velocity
         return new ProxySender(adapter);
     }
 
     @Override
     protected PlatformCommandExecutor getCommandExecutor() {
-        // Sul proxy non si eseguono comandi server/world diretti
-        return null;
+        return new VelocityCommandExecutor(proxyServer, getPlatformLogger());
     }
 
     @Override
@@ -119,5 +119,10 @@ public class VelocityRewardsxCore extends RewardsXCore {
             this.coreProxyListener.setBuy(this.buy);
         }
         return coreProxyListener;
+    }
+
+    @Override
+    protected RewardPollingTask getPollingTask() {
+        return pollingTask;
     }
 }

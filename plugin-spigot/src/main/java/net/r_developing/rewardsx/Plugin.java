@@ -1,16 +1,15 @@
 package net.r_developing.rewardsx;
 
 import net.r_developing.rewardsx.api.core.RewardsXCore;
+import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Plugin extends JavaPlugin {
 
-    // Istanza del Core che gestisce la logica
-    private RewardsXCore core;
+    private SpigotRewardsxCore core;
 
     @Override
     public void onEnable() {
-        // Inizializza il core passando "this" (il plugin) come contesto
         this.core = new SpigotRewardsxCore(this);
         this.core.onEnable();
     }
@@ -20,5 +19,9 @@ public final class Plugin extends JavaPlugin {
         if (core != null) {
             core.onDisable();
         }
+    }
+
+    public RewardPollingTask getPollingTask(){
+        return core.getPollingTask();
     }
 }

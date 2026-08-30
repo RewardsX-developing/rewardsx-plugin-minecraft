@@ -3,6 +3,7 @@ package net.r_developing.rewardsx;
 import net.r_developing.rewardsx.api.core.RewardsXCore;
 import net.r_developing.rewardsx.api.core.gui.PlatformGUI;
 import net.r_developing.rewardsx.api.core.network.Api;
+import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
 import net.r_developing.rewardsx.api.core.network.Translator;
 import net.r_developing.rewardsx.api.core.platform.*;
 import net.r_developing.rewardsx.api.core.proxy.AbstractProxyListener;
@@ -14,10 +15,9 @@ import net.r_developing.rewardsx.logger.BukkitLogger;
 import net.r_developing.rewardsx.platform.*;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class SpigotRewardsxCore extends RewardsXCore {
-    private final JavaPlugin plugin;
+    private final Plugin plugin;
 
     // Istanze concrete
     private final PlatformLogger logger;
@@ -29,7 +29,7 @@ public class SpigotRewardsxCore extends RewardsXCore {
     private final SpigotProxyListener spigotProxyListener;
     private final AbstractProxyListener coreProxyListener;
 
-    public SpigotRewardsxCore(JavaPlugin plugin) {
+    public SpigotRewardsxCore(Plugin plugin) {
         this.plugin = plugin;
         this.logger = new BukkitLogger(plugin, getMainConfigWrapper());
         this.scheduler = new BukkitSchedulerWrapper(plugin);
@@ -38,7 +38,6 @@ public class SpigotRewardsxCore extends RewardsXCore {
         this.api = new Api();
         this.gui = adapter.getGUI();
 
-        // 1. GUI come Listener per i click (se inizialmente presente)
         if (gui instanceof Listener) {
             Bukkit.getPluginManager().registerEvents((Listener) gui, plugin);
         }
@@ -132,5 +131,9 @@ public class SpigotRewardsxCore extends RewardsXCore {
             this.coreProxyListener.setBuy(this.buy);
         }
         return coreProxyListener;
+    }
+
+    protected RewardPollingTask getPollingTask(){
+        return pollingTask;
     }
 }

@@ -5,6 +5,7 @@ import net.r_developing.rewardsx.api.core.config.Config;
 import net.r_developing.rewardsx.api.core.language.Messager;
 import net.r_developing.rewardsx.api.core.network.Api;
 import net.r_developing.rewardsx.api.core.network.Fetcher;
+import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
 import net.r_developing.rewardsx.api.core.platform.PlatformAdapter;
 import net.r_developing.rewardsx.api.core.updater.Version;
 import org.bukkit.Bukkit;
@@ -25,7 +26,6 @@ public class Platform {
     private volatile long lastValidationTime = 0;
     private static final long CACHE_DURATION = 30000; // 30 seconds
 
-    // Iniezione di dipendenze: passiamo l'Adapter e l'API
     public Platform(Config config, Api api, PlatformAdapter adapter) {
         this.config = config;
         this.api = api;
@@ -40,6 +40,10 @@ public class Platform {
         return config.getMainConfig().getString("platform_secret");
     }
 
+    public String getPlatformKey(){
+        return config.getMainConfig().getString("platform_key");
+    }
+
     public boolean isProxyOrBungee() {
         boolean isProxyMode = config.getMainConfig().getBoolean("proxy", false);
         boolean isBungee = (adapter.type() == PlatformAdapter.Type.BUNGEECORD || adapter.type() == PlatformAdapter.Type.VELOCITY);
@@ -50,6 +54,9 @@ public class Platform {
         adapter.cancelAllTasks(); // Astratto
         cachedValidation = null;
         lastValidationTime = 0;
+
+        RewardPollingTask pollingTask =  adapter.getIstance().getPollingTask();
+        pollingTask.start();
 
         boolean isProxyMode = config.getMainConfig().getBoolean("proxy", false);
         boolean isBungee = (adapter.type() == PlatformAdapter.Type.BUNGEECORD || adapter.type() == PlatformAdapter.Type.VELOCITY);
@@ -66,7 +73,7 @@ public class Platform {
                 Map<String, Object> payload = new HashMap<>();
                 payload.put("id", getId());
 
-                api.send("verifyplatform", payload, res -> {});
+                api.send("POST", "verify-platform", payload, res -> {});
                 fetcher.start();
 
                 adapter.getLogger().info(toAnsi(String.format(messager.get("welcome"), getName())));
@@ -114,7 +121,7 @@ public class Platform {
         }
 
         Map<String, Object> payload = new HashMap<>();
-        api.send("platform", payload, response -> {
+        api.send("GET", "platform", payload, response -> {
             if(response == null) {
                 System.err.println("Request failed or returned null");
                 callback.accept(false);

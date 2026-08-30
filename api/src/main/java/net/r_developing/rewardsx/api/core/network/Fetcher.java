@@ -2,6 +2,7 @@ package net.r_developing.rewardsx.api.core.network;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import lombok.Getter;
 import lombok.Setter;
 import net.r_developing.rewardsx.api.core.platform.PlatformLogger;
 import net.r_developing.rewardsx.api.core.platform.PlatformScheduler;
@@ -9,6 +10,7 @@ import net.r_developing.rewardsx.api.core.Platform;
 import net.r_developing.rewardsx.api.core.buy.Buy;
 import net.r_developing.rewardsx.api.core.config.Config;
 import net.r_developing.rewardsx.api.core.platform.PlatformAdapter;
+import net.r_developing.rewardsx.api.core.rewards.RewardFetcher;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -32,10 +34,13 @@ public class Fetcher {
     public final Map<String, Integer> bitsList = new HashMap<>();
     public final Map<String, Integer> buysList = new HashMap<>();
     public String latestVersion = "";
+    @Setter
+    @Getter
+    public RewardFetcher rewardFetcher;
 
-    private final Set<String> inFlight = ConcurrentHashMap.newKeySet();
+    @Getter
+    public final Set<String> inFlight = ConcurrentHashMap.newKeySet();
 
-    // Costruttore con Dependency Injection per usare componenti Platform-Agnostic
     public Fetcher(PlatformAdapter adapter, PlatformScheduler scheduler, Api api, Config config, Platform platform, Buy buy, int intervalSeconds) {
         this.logger = adapter.getLogger();
         this.scheduler = scheduler;
@@ -47,13 +52,12 @@ public class Fetcher {
     }
 
     public void start() {
-        // Usiamo l'astrazione asincrona invece di Bukkit.getScheduler()
         scheduler.runAsyncRepeatingTask(() -> {
 
-            // 1. rewards
             Map<String, Object> rewardsPayload = new HashMap<>();
             rewardsPayload.put("platform", platform.getId());
-            api.send("getrewards", rewardsPayload, result -> {
+
+            api.send("GET", "rewards", rewardsPayload, result -> {
                 if (result != null) {
                     @SuppressWarnings("unchecked")
                     List<Map<String, String>> list = (List<Map<String, String>>) result.get("rewards");
@@ -61,35 +65,14 @@ public class Fetcher {
                 }
             });
 
-            // 4. successbuys
-            if (!platform.isProxy()) {
-                Map<String, Object> payload = new HashMap<>();
-                payload.put("platform", platform.getId());
-                api.send("getsuccessbuys", payload, result -> {
-                    if (result != null) {
-                        @SuppressWarnings("unchecked")
-                        List<Map<String, Object>> list = (List<Map<String, Object>>) result.get("buys");
+            String secret = config.getMainConfig().getString("platform_key");
 
-                        if (list != null) {
-                            for (Map<String, Object> o : list) {
-                                String userId   = Objects.toString(o.get("userId"), null);
-                                String rewardId = Objects.toString(o.get("rewardId"), null);
-                                String username = Objects.toString(o.get("username"), null);
-
-                                String key = userId + ":" + rewardId;
-                                if (!inFlight.add(key)) continue;
-
-                                if (username != null) buy.confirm(userId, rewardId, username);
-                                else                  buy.confirm(userId, rewardId);
-                            }
-                        } else {
-                            logger.warning("Successbuys list is null"); // Astrazione logger
-                        }
-                    }
+            rewardFetcher.fetchPendingRewards(platform.getId(), secret, inFlight, (userId, rewardId, username, commands) -> {
+                buy.confirm(userId, rewardId, username, commands, () -> {
+                    inFlight.remove(userId + ":" + rewardId);
                 });
-            }
+            });
 
-            // Version check
             try (InputStream in = new URL("https://api.spiget.org/v2/resources/121867/versions/latest").openStream();
                  Scanner scanner = new Scanner(in)) {
 
@@ -100,10 +83,14 @@ public class Fetcher {
 
             } catch (Exception e) {
                 if (platform.isDebug()) {
-                    logger.warning("Failed to check for updates: " + e.getMessage()); // Astrazione logger
+                    logger.warning("Failed to check for updates: " + e.getMessage());
                 }
             }
         }, 0L, intervalTicks);
+    }
+
+    public void removeInFlight(String key) {
+        inFlight.remove(key);
     }
 
     public CompletableFuture<Boolean> linkAccount(UUID uuid, String username, String code) {
@@ -114,8 +101,7 @@ public class Fetcher {
         payload.put("username", username);
         payload.put("code", code);
 
-        // This relies on your existing api.send structure hitting your Next.js backend
-        api.send("linkaccount", payload, result -> {
+        api.send("POST", "linkaccount", payload, result -> {
             if (result != null && "true".equalsIgnoreCase(String.valueOf(result.get("success")))) {
                 future.complete(true);
             } else {
@@ -123,6 +109,14 @@ public class Fetcher {
             }
         });
 
+        return future;
+    }
+
+    public CompletableFuture<Map<String, Object>> authenticateServer(String secretKey) {
+        CompletableFuture<Map<String, Object>> future = new CompletableFuture<>();
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("secret", secretKey);
+        api.send("POST", "server/auth", payload, future::complete);
         return future;
     }
 
@@ -141,7 +135,6 @@ public class Fetcher {
                 .collect(Collectors.toList());
     }
 
-    // Utility per pulire il codice di parsing
     private int parseNumber(Object obj) {
         if (obj instanceof Number) {
             return ((Number) obj).intValue();

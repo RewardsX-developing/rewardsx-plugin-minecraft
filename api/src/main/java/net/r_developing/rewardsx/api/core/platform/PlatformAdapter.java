@@ -15,8 +15,6 @@ public interface PlatformAdapter {
     PlatformGUI getGUI();
     PlatformLogger getLogger();
 
-    // NUOVO METODO: Inietta le dipendenze dal Core a Spigot prima di registrare gli eventi
-    // Devi aggiungerlo all'interfaccia PlatformAdapter nel tuo pacchetto Core
     void setupDependencies(PlatformGUI gui, CoreCommands coreCommands, AbstractProxyListener proxyListener);
 
     void registerCommandsAndEvents();

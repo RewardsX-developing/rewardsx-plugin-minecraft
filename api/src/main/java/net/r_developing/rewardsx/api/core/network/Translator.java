@@ -17,6 +17,7 @@ public class Translator {
         payload.put("message", message);
         payload.put("target", target);
 
+        /*
         api.send("translate", payload, result -> {
             try {
                 String response = result.get("message").toString();
@@ -25,6 +26,8 @@ public class Translator {
                 future.completeExceptionally(e);
             }
         });
+
+         */
 
         return future;
     }

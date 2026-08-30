@@ -59,6 +59,15 @@ public class VelocityYamlConfig implements PlatformConfig {
     }
 
     @Override
+    public int getInt(String path, int def) {
+        Object val = get(path);
+        if (val instanceof Number) {
+            return ((Number) val).intValue();
+        }
+        return def;
+    }
+
+    @Override
     public boolean getBoolean(String path, boolean def) {
         Object val = get(path);
         if (val instanceof Boolean) {

@@ -1,16 +1,17 @@
 package net.r_developing.rewardsx;
 
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.plugin.Plugin;
 import net.r_developing.rewardsx.api.core.RewardsXCore;
 import net.r_developing.rewardsx.api.core.gui.PlatformGUI;
 import net.r_developing.rewardsx.api.core.network.Api;
+import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
 import net.r_developing.rewardsx.api.core.network.Translator;
 import net.r_developing.rewardsx.api.core.platform.*;
 import net.r_developing.rewardsx.api.core.proxy.AbstractProxyListener;
 import net.r_developing.rewardsx.api.core.proxy.ProxySender;
 import net.r_developing.rewardsx.config.BungeeYamlConfig;
 import net.r_developing.rewardsx.logger.BungeeLogger;
+import net.r_developing.rewardsx.platform.BungeeCommandExecutor;
 import net.r_developing.rewardsx.platform.BungeePlatformAdapter;
 import net.r_developing.rewardsx.platform.BungeeSchedulerWrapper;
 import net.r_developing.rewardsx.platform.BungeeServer;
@@ -96,8 +97,7 @@ public class BungeeRewardsxCore extends RewardsXCore {
 
     @Override
     protected PlatformCommandExecutor getCommandExecutor() {
-        // Sul proxy non esegui comandi “world”; questo executor è solo un placeholder no-op
-        return null;
+        return new BungeeCommandExecutor(plugin);
     }
 
     @Override
@@ -109,5 +109,10 @@ public class BungeeRewardsxCore extends RewardsXCore {
     @Override
     protected AbstractProxyListener getCoreProxyListener() {
         return coreProxyListener;
+    }
+
+    @Override
+    protected RewardPollingTask getPollingTask() {
+        return pollingTask;
     }
 }

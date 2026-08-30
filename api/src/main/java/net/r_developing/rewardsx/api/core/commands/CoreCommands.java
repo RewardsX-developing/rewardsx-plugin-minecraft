@@ -10,7 +10,6 @@ import net.r_developing.rewardsx.api.core.player.RPlayer;
 import net.r_developing.rewardsx.api.core.proxy.ProxySender;
 import net.r_developing.rewardsx.api.core.updater.Version;
 import net.r_developing.rewardsx.api.core.Platform;
-import org.bukkit.ChatColor;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,6 +63,29 @@ public class CoreCommands {
         }
 
         switch (args[0].toLowerCase()) {
+            case "secret":
+                if (args.length != 2) {
+                    logger.warning("Usage: /rewardsx secret <key>");
+                    return true;
+                }
+
+                String secretKey = args[1];
+                logger.info("Verifying secret key on RewardsX...");
+
+                fetcher.authenticateServer(secretKey).thenAccept(response -> {
+                    if (response != null && response.containsKey("platform_id")) {
+                        String platformName = (String) response.get("name");
+
+                        config.setPlatformCredentials("platform_key", secretKey);
+
+                        this.isProxy = platform.isProxyOrBungee();
+
+                        logger.info("Successfully connect gameserver with name: " + platformName);
+                    } else {
+                        logger.warning("Error: Wrong Token of GameServer.");
+                    }
+                });
+                return true;
             case "reload":
             case "rel":
                 config.reloadConfigs();
@@ -90,6 +112,7 @@ public class CoreCommands {
 
     private void sendMinimalHelpConsole() {
         logger.info("--- RewardsX Help [Console] ---");
+        logger.info("/rewardsx secret <key> - Link this server to the web dashboard");
         logger.info("/rewardsx reload - Reload config");
         logger.info("/rewardsx version - Check version");
     }
@@ -98,7 +121,7 @@ public class CoreCommands {
         boolean limitedMode = !platformValid;
 
         if(!isCommandsEnabled){
-            sender.sendMessage(ChatColor.RED + "Commands are disabled. Enable it on config!");
+            sender.sendMessage("§cCommands are disabled. Enable it on config!");
             return false;
         }
 
@@ -117,6 +140,7 @@ public class CoreCommands {
                 if (hasPermission(sender, "rewardsx.reload")) {
                     config.reloadConfigs();
                     platform.checkAndStart(fetcher, messager, version);
+
                     this.isProxy = platform.isProxyOrBungee();
                     platform.isValid(valid -> this.platformValid = valid);
                     sender.sendMessage(messager.get("reload"));
@@ -135,6 +159,7 @@ public class CoreCommands {
                 }
                 break;
 
+            /* OUTATED COMMAND
             case "connect":
                 if (limitedMode) {
                     sender.sendMessage(messager.get("platformNotReady"));
@@ -147,21 +172,23 @@ public class CoreCommands {
                 }
 
                 if (args.length != 2) {
-                    sender.sendMessage(ChatColor.RED + "Usage: /rewardsx connect <code>");
+                    sender.sendMessage("§cUsage: /rewardsx connect <code>");
                     return true;
                 }
 
                 String code = args[1].toUpperCase();
-                sender.sendMessage(ChatColor.YELLOW + "Connecting your account to web interface...");
+                sender.sendMessage("§eConnecting your account to web interface...");
 
                 fetcher.linkAccount(sender.getUniqueId(), sender.getPlayerName(), code).thenAccept(success -> {
                     if (success) {
-                        sender.sendMessage(ChatColor.GREEN + "Account connected successfully!");
+                        sender.sendMessage("§aAccount connected successfully!");
                     } else {
-                        sender.sendMessage(ChatColor.RED + "Invalid or expired connection code. Please generate a new one on the web interface.");
+                        sender.sendMessage("§cInvalid or expired connection code. Please generate a new one on the web interface.");
                     }
                 });
                 break;
+
+             */
 
             case "buy":
             case "purchase":

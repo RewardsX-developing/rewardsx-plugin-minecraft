@@ -1,5 +1,7 @@
 package net.r_developing.rewardsx;
 
+import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
+
 public final class Plugin extends net.md_5.bungee.api.plugin.Plugin {
     private BungeeRewardsxCore core;
 
@@ -12,5 +14,9 @@ public final class Plugin extends net.md_5.bungee.api.plugin.Plugin {
     @Override
     public void onDisable() {
         if (core != null) core.onDisable();
+    }
+
+    public RewardPollingTask getPollingTask(){
+        return core.getPollingTask();
     }
 }

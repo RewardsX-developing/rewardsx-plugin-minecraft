@@ -4,14 +4,14 @@ import net.r_developing.rewardsx.api.core.config.Config;
 import net.r_developing.rewardsx.api.core.network.Api;
 import net.r_developing.rewardsx.api.core.network.Fetcher;
 import net.r_developing.rewardsx.api.core.platform.*;
-import net.r_developing.rewardsx.api.core.platform.*;
 import net.r_developing.rewardsx.api.core.player.RPlayer;
 import net.r_developing.rewardsx.api.core.proxy.ProxySender;
 import net.r_developing.rewardsx.api.core.Platform;
 import net.r_developing.rewardsx.api.core.language.Messager;
-import net.r_developing.rewardsx.api.core.platform.*;
+import net.r_developing.rewardsx.api.core.rewards.RewardCommand;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Buy {
     private final Fetcher fetcher;
@@ -58,82 +58,83 @@ public class Buy {
         }
     }
 
-    public void confirm(String userId, String buyId, String username) {
+    public void confirm(String userId, String transactionId, String username, List<RewardCommand> commands, Runnable onComplete) {
         RPlayer online = config.getPlayerById(userId);
         if (online == null && username != null) {
             online = rServer.getPlayerExact(username);
         }
 
-        boolean offlineAllowed = config.getMainConfig().getBoolean("offline_commands_enabled");
-
         String targetName = (online != null) ? online.getPlayerName() : username;
+        boolean needsOnline = commands.stream().anyMatch(RewardCommand::isRequireOnline);
+        boolean isPlayerOffline = (online == null || !online.isOnline());
 
-        if (online == null && !offlineAllowed) {
-            logger.warning(
-                    "Skipping reward " + buyId + " for user " + userId +
-                            " (username=" + username + "): player offline and offline_commands_enabled=false");
+        if (isPlayerOffline && needsOnline) {
+            logger.warning("Cannot execute reward " + transactionId + " for user " + userId + " (" + username + "): player offline but a command requires them to be online.");
+            onComplete.run();
             return;
         }
 
         if (targetName == null) {
-            logger.warning("Cannot resolve a player name for buy " + buyId + " / user " + userId);
+            logger.warning("Cannot resolve a player name for transaction " + transactionId + " / user " + userId);
+            onComplete.run();
             return;
         }
 
         Map<String, Object> payload = new HashMap<>();
-        payload.put("id", buyId);
+        payload.put("id", transactionId);
         payload.put("user", userId);
+        payload.put("token", config.getMainConfig().getString("platform_key"));
 
         final RPlayer finalOnline = online;
         final String finalName = targetName;
 
-        api.send("redeempurchase", payload, result -> {
+        api.send("POST", "complete-buy", payload, result -> {
             if (result == null) {
-                logger.warning("No response from server for buy " + buyId);
-                // Usiamo scheduler astratto
-                scheduler.runSync(() -> {
-                    if (finalOnline != null)
-                        finalOnline.sendMessage(messager.custom("&cINTERNAL ERROR: No response from server."));
-                });
+                logger.warning("No response from server for transaction " + transactionId);
+                onComplete.run();
                 return;
             }
 
             boolean success = Boolean.parseBoolean(Objects.toString(result.get("success"), "false"));
-            String message = Objects.toString(result.get("message"), "Unknown response").toLowerCase().trim();
 
             scheduler.runSync(() -> {
                 if (success) {
-                    executeRewardCommands(buyId, finalName, finalOnline);
-                    if (finalOnline != null) finalOnline.sendMessage(messager.get("rewardReceived"));
+                    List<String> rawCommandStrings = commands.stream()
+                            .map(RewardCommand::getCommand)
+                            .collect(Collectors.toList());
+
+                    executeRewardCommands(transactionId, finalName, finalOnline, rawCommandStrings);
+                    if (finalOnline != null && finalOnline.isOnline()) {
+                        finalOnline.sendMessage(messager.get("rewardReceived"));
+                    }
                 } else {
-                    logger.warning("redeempurchase failed for " + buyId + ": " + message);
-                    if (finalOnline != null) finalOnline.sendMessage(messager.custom("&c" + message));
+                    logger.warning("complete-buy failed for transaction " + transactionId);
                 }
+
+                onComplete.run();
             });
         });
     }
 
-    public void confirm(String userId, String buyId) {
-        confirm(userId, buyId, null);
-    }
+    private void executeRewardCommands(String rewardId, String playerName, RPlayer online, List<String> backendCommands) {
+        List<String> commandsToExecute = backendCommands;
 
-    private void executeRewardCommands(String rewardId, String playerName, RPlayer online) {
-        if (config.getRewardsConfig() == null) return;
-        List<String> commands = (List<String>) config.getRewardsConfig().get(rewardId + ".commands");
+        if (commandsToExecute == null || commandsToExecute.isEmpty()) {
+            if (config.getRewardsConfig() != null) {
+                commandsToExecute = (List<String>) config.getRewardsConfig().get(rewardId + ".commands");
+            }
+        }
 
-        if (commands != null && !commands.isEmpty()) {
-            for (String cmd : commands) {
-                // Il rimpiazzo basico di colori è ok nel core.
+        if (commandsToExecute != null && !commandsToExecute.isEmpty()) {
+            for (String cmd : commandsToExecute) {
                 cmd = cmd.replace("&", "§");
-
-                // Deleghiamo l'esecuzione e il parsing dei placeholder all'adapter specifico
                 commandExecutor.dispatchConsoleCommand(cmd, online, playerName);
             }
         } else {
             if (online != null) {
                 online.sendMessage(messager.get("actionNotFound"));
             }
-            logger.warning("Action for reward " + rewardId + " not found, please add it!");
+            logger.warning("Action for reward " + rewardId + " not found, please configure it on the web dashboard!");
         }
     }
 

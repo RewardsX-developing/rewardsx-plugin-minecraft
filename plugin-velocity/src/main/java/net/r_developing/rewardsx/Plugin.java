@@ -8,6 +8,7 @@ import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import lombok.Getter;
+import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
@@ -51,6 +52,10 @@ public final class Plugin {
         if (this.core != null) {
             this.core.onDisable();
         }
+    }
+
+    public RewardPollingTask getPollingTask(){
+        return core.getPollingTask();
     }
 
 }
