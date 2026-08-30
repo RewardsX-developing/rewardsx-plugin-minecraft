@@ -26,6 +26,7 @@ public class RewardFetcher {
     public void fetchPendingRewards(String platformId, String serverToken, Set<String> inFlight, RewardConfirmCallback callback) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("platform", platformId);
+        payload.put("token", serverToken);
 
         api.send("GET", "success-buys", payload, result -> {
             if (result == null) return;
