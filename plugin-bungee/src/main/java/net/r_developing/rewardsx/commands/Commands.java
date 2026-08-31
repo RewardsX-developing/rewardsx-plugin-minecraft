@@ -20,12 +20,11 @@ public class Commands extends Command {
 
     @Override
     public void execute(CommandSender sender, String[] args) {
-        if (sender instanceof ProxiedPlayer) {
-            ProxiedPlayer proxiedPlayer = (ProxiedPlayer) sender;
+        if (sender instanceof ProxiedPlayer proxiedPlayer) {
             RPlayer rPlayer = new BungeePlayer(proxiedPlayer);
             coreCommands.execute(rPlayer, args);
         } else {
-            coreCommands.executeConsole(sender.getName(), args);
+            coreCommands.executeConsole(args);
         }
     }
 }

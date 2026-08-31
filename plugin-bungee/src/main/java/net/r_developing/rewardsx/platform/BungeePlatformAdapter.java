@@ -43,7 +43,7 @@ public class BungeePlatformAdapter implements PlatformAdapter {
     }
 
     @Override
-    public PlatformPlugin getIstance() {
+    public PlatformPlugin getInstance() {
         return new BungeePlatformPlugin(plugin);
     }
 

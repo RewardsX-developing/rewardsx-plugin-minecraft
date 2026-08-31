@@ -55,7 +55,7 @@ public class VelocityPlatformAdapter implements PlatformAdapter {
     }
 
     @Override
-    public PlatformPlugin getIstance() {
+    public PlatformPlugin getInstance() {
         return new VelocityPlatformPlugin(plugin);
     }
 
