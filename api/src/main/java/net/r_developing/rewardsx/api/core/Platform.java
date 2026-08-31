@@ -153,7 +153,7 @@ public class Platform {
                 // Send a verification ping to the backend.
                 Map<String, Object> payload = new HashMap<>();
                 payload.put("id", getId());
-                api.send("POST", "verify-platform", payload, _ -> {});
+                api.send("POST", "verify-platform", payload, ignored -> {});
 
                 // Start the reward fetcher (polls for pending grants).
                 fetcher.start();
@@ -244,7 +244,7 @@ public class Platform {
     public void isValid(Consumer<Boolean> callback) {
         // Guard: API must be initialized first.
         if (!api.init()) {
-            callback.accept(false);
+            callback.accept(Boolean.FALSE);
             return;
         }
 
@@ -263,7 +263,7 @@ public class Platform {
         api.send("GET", "platform", payload, response -> {
             if (response == null) {
                 System.err.println("Request failed or returned null");
-                callback.accept(false);
+                callback.accept(Boolean.FALSE);
                 return;
             }
 
@@ -275,7 +275,7 @@ public class Platform {
                 Map<String, Object> platformObj = (Map<String, Object>) response.get("platform");
                 this.name = String.valueOf(platformObj.get("name_server"));
                 // Cache the validation result.
-                cachedValidation = true;
+                cachedValidation = (Boolean) true;
                 lastValidationTime = System.currentTimeMillis();
 
                 if (isDebug()) {
@@ -283,7 +283,7 @@ public class Platform {
                 }
             }
 
-            callback.accept(valid);
+            callback.accept(Boolean.valueOf(valid));
         });
     }
 
@@ -292,7 +292,7 @@ public class Platform {
      *
      * <p>Minecraft uses § (section symbol) followed by a hex digit for colors.
      * This method translates them to ANSI escape codes so console output displays
-     * colors correctly. Example: §c (red) becomes \u001B[91m (ANSI red).
+     * colors correctly. Example: §c (red) becomes \u001B91m (ANSI red).
      *
      * <p>Used to colorize console log messages that include Minecraft formatting.
      *

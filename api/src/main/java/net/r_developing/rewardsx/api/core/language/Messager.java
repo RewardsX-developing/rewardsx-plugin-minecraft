@@ -125,7 +125,7 @@ public class Messager {
                 }
 
                 // Initialize an empty cache for this language.
-                translationCache.computeIfAbsent(langCode, _ -> new ConcurrentHashMap<>());
+                translationCache.computeIfAbsent(langCode, ignored -> new ConcurrentHashMap<>());
 
                 // Collect translation futures so we can wait for all to complete.
                 List<CompletableFuture<Void>> futures = new ArrayList<>();
