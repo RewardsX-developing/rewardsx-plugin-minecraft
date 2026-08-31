@@ -27,12 +27,11 @@ public class Commands implements SimpleCommand {
         CommandSource source = invocation.source();
         String[] args = invocation.arguments();
 
-        if (source instanceof Player) {
-            Player player = (Player) source;
+        if (source instanceof Player player) {
             RPlayer rPlayer = new VelocityPlayer(player);
             coreCommands.execute(rPlayer, args);
         } else {
-            coreCommands.executeConsole("Console", args);
+            coreCommands.executeConsole(args);
         }
     }
 

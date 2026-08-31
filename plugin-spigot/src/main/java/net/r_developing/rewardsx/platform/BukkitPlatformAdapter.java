@@ -48,7 +48,7 @@ public class BukkitPlatformAdapter implements PlatformAdapter {
     }
 
     @Override
-    public PlatformPlugin getIstance() {
+    public PlatformPlugin getInstance() {
         return new BukkitPlatformPlugin(plugin);
     }
 

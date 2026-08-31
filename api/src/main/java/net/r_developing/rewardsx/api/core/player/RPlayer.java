@@ -40,7 +40,7 @@ public interface RPlayer {
     Object getPlayer();
 
     /**
-     * Unique identifier of the player on Mojang’s network.
+     * Unique identifier of the player on Mojang's network.
      * <p>
      * May return {@code null} when the sender is the console or another
      * non-player source.

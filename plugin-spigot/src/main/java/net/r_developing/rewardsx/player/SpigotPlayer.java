@@ -90,7 +90,7 @@ public class SpigotPlayer implements RPlayer {
             return;
         }
 
-        JavaPlugin nativePlugin = (JavaPlugin) plugin.getIstance().getPlugin();
+        JavaPlugin nativePlugin = (JavaPlugin) plugin.getInstance().getPlugin();
 
         plugin.getLogger().debug(
                 "[RewardsX] sendPluginMessage -> channel=" + channel +

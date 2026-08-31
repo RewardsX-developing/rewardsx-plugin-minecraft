@@ -30,13 +30,12 @@ public class Commands implements CommandExecutor, TabCompleter, PlatformCommandE
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (sender instanceof Player) {
-            Player player = (Player) sender;
+        if (sender instanceof Player player) {
             RPlayer rPlayer = new SpigotPlayer(player);
             return coreCommands.execute(rPlayer, args);
         } else {
             // Console - gestisce comandi admin da console
-            return coreCommands.executeConsole(sender.getName(), args);
+            return coreCommands.executeConsole(args);
         }
     }
 
