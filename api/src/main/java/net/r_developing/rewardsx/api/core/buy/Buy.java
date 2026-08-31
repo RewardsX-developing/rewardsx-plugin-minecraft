@@ -74,13 +74,13 @@ public class Buy {
             // Local backend path - build the request payload.
             String quantity = "1";
             String platformId = platform.getId();
-            String userId = config.getUserId(player.getUniqueId());
+           // String userId = config.getUserId(player.getUniqueId());
 
             Map<String, Object> payload = new HashMap<>();
             payload.put("id", rewardName);
             payload.put("quantity", quantity);
             payload.put("platform", platformId);
-            payload.put("userid", userId);
+            //payload.put("userid", userId);
 
             // TODO: get the reward id to direct the player to the web purchase page.
         } else {
@@ -105,10 +105,7 @@ public class Buy {
      */
     public void confirm(String userId, String transactionId, String username, List<RewardCommand> commands, Runnable onComplete) {
         // Try to find the player online by user ID, then by username as fallback.
-        RPlayer online = config.getPlayerById(userId);
-        if (online == null && username != null) {
-            online = rServer.getPlayerExact(username);
-        }
+        RPlayer online = rServer.getPlayerExact(username);
 
         // Prefer the online player object, else fall back to the username from the backend.
         String targetName = (online != null) ? online.getPlayerName() : username;
@@ -187,17 +184,10 @@ public class Buy {
      * @param backendCommands the commands from the backend (maybe null or empty)
      */
     private void executeRewardCommands(String rewardId, String playerName, RPlayer online, List<String> backendCommands) {
-        List<String> commandsToExecute = backendCommands;
 
-        // If the backend gave us no commands, try the local config.
-        // This delegates to a helper method that safely extracts the list from config.
-        if (commandsToExecute == null || commandsToExecute.isEmpty()) {
-            commandsToExecute = getCommandsFromConfig(rewardId);
-        }
-
-        if (commandsToExecute != null && !commandsToExecute.isEmpty()) {
+        if (backendCommands != null && !backendCommands.isEmpty()) {
             // Execute each command - replace Minecraft color codes (&) with section symbols (§).
-            for (String cmd : commandsToExecute) {
+            for (String cmd : backendCommands) {
                 cmd = cmd.replace("&", "§");
                 commandExecutor.dispatchConsoleCommand(cmd, online, playerName);
             }
@@ -211,52 +201,6 @@ public class Buy {
     }
 
     /**
-     * Safely extracts the command list for a reward ID from the local config.
-     * <p>
-     * This helper method handles the messiness of config file access - null checks,
-     * type validation (the config value might not be a List), and graceful fallback
-     * to an empty list if anything goes wrong. It also filters out non-String elements
-     * in case the YAML config has mixed types.
-     *
-     * @param rewardId the reward ID to look up (e.g. "rank-vip")
-     * @return a list of command strings, or an empty list if not found or invalid
-     */
-    private List<String> getCommandsFromConfig(String rewardId) {
-        // Get the rewards config section - may be null if not yet loaded.
-        var rewardsConfig = config.getRewardsConfig();
-        if (rewardsConfig == null) {
-            return List.of();
-        }
-
-        // Look up the config entry by key (e.g. "rank-vip.commands").
-        Object value = rewardsConfig.get(rewardId + ".commands");
-        if (value == null) {
-            // Key doesn't exist - no commands configured for this reward.
-            return List.of();
-        }
-
-        // Type guard - the config entry must be a List. If someone put a String or
-        // other type in the YAML, reject it and return empty.
-        if (!(value instanceof List<?> list)) {
-            return List.of();
-        }
-
-        // Copy the List and filter to Strings only, ignoring any bad entries.
-        // This protects against YAML entries like:
-        //   rank-vip.commands:
-        //     - "give [player] diamond"
-        //     - 42                       <-- accidentally an int
-        //     - "say hello"
-        List<String> result = new ArrayList<>(list.size());
-        for (Object elem : list) {
-            if (elem instanceof String s) {
-                result.add(s);
-            }
-        }
-        return result;
-    }
-
-    /**
      * Utility to execute a single command on the main thread with a player context.
      * <p>
      * Used by the web dashboard or other integrations to trigger an action
@@ -266,8 +210,6 @@ public class Buy {
      * @param cmd    the command string (e.g. "give [player] diamond")
      */
     public void executeCommand(RPlayer player, String cmd) {
-        if (config.getRewardsConfig() == null) return;
-
         if (cmd != null && player != null) {
             // Prepare the command - replace Minecraft color codes.
             final String resolvedCmd = cmd.replace("&", "§");

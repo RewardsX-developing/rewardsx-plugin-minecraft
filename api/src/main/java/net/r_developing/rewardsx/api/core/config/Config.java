@@ -64,24 +64,6 @@ public class Config {
     private final PlatformConfig messagesConfig;
 
     /**
-     * Reward-to-command mappings (rewards.yml).
-     * Exposed as @Getter. Structure is typically:
-     *   reward-name:
-     *     commands:
-     *       - "give [player] diamond"
-     *       - "say You got a reward!"
-     */
-    @Getter
-    private final PlatformConfig rewardsConfig;
-
-    /**
-     * Player UUID to RewardsX user ID mappings (userdata.yml).
-     * Persists the link between Minecraft players and their RewardsX accounts.
-     * Not exposed as @Getter - only accessed via getUserId() and getPlayerById().
-     */
-    private final PlatformConfig userDataConfig;
-
-    /**
      * Constructor injection. All four config objects and default value holders
      * are passed in by the platform-specific bootstrap code.
      * <p>
@@ -95,9 +77,7 @@ public class Config {
             Object mainConfigDefaults,
             Object messagesConfigDefaults,
             PlatformConfig mainConfig,
-            PlatformConfig messagesConfig,
-            PlatformConfig rewardsConfig,
-            PlatformConfig userDataConfig) {
+            PlatformConfig messagesConfig) {
 
         this.rServer = server;
         this.adapter = adapter;
@@ -108,8 +88,6 @@ public class Config {
 
         this.mainConfig = mainConfig;
         this.messagesConfig = messagesConfig;
-        this.rewardsConfig = rewardsConfig;
-        this.userDataConfig = userDataConfig;
 
         // Scan for and add any missing config keys from the defaults.
         checkMissing();
@@ -127,57 +105,6 @@ public class Config {
     }
 
     /**
-     * Looks up a RewardsX user ID by a player's Minecraft UUID.
-     * <p>
-     * This is the primary lookup direction - "given a player, who are they on RewardsX?"
-     * Used during reward grant to map the player to their backend user account.
-     *
-     * @param playerUUID the player's Minecraft UUID
-     * @return the user ID string, or null if not linked
-     */
-    public String getUserId(UUID playerUUID) {
-        if (userDataConfig == null) return null;
-        return userDataConfig.getString(playerUUID.toString());
-    }
-
-    /**
-     * Finds an online player by their RewardsX user ID.
-     * <p>
-     * This is the reverse lookup - "given a user ID, is that player online right now?"
-     * Used in confirm() to check if a player is available before granting a reward.
-     * <p>
-     * The implementation:
-     *   1. Scan all keys in userDataConfig (each key is a UUID string)
-     *   2. Find the key whose value matches the user ID
-     *   3. Parse that key as a UUID and fetch the player from the server
-     *   4. Return the first non-null match, or null if not found
-     *
-     * @param userId the RewardsX user ID
-     * @return the online player, or null if not online or not found
-     */
-    public RPlayer getPlayerById(String userId) {
-        if (userDataConfig == null || userId == null) return null;
-        return userDataConfig.getKeys(false).stream()
-                // Iterate over all UUID keys stored in userdata.yml
-                .filter(key -> userId.equals(userDataConfig.getString(key)))
-                // Find the one whose value is this user ID
-                .map(key -> {
-                    try {
-                        // Try to parse the key as a UUID and fetch the player.
-                        return rServer.getPlayer(UUID.fromString(key));
-                    } catch (Exception e) {
-                        // Key was not a valid UUID, or player is not online - skip.
-                        return null;
-                    }
-                })
-                // Filter out nulls (failed UUID parses or offline players).
-                .filter(Objects::nonNull)
-                // Return the first match, or null if none found.
-                .findFirst()
-                .orElse(null);
-    }
-
-    /**
      * Reloads all four config files from disk.
      * <p>
      * Called on /rewardsx reload - this lets admins edit a config file and apply
@@ -187,8 +114,6 @@ public class Config {
     public void reloadConfigs() {
         mainConfig.reload();
         messagesConfig.reload();
-        rewardsConfig.reload();
-        userDataConfig.reload();
         checkMissing();
     }
 

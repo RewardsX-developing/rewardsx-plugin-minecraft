@@ -126,4 +126,6 @@ public interface PlatformConfig {
      * @return the integer value, or defaultValue if not found
      */
     int getInt(String path, int defaultValue);
+
+    boolean contains(String key);
 }

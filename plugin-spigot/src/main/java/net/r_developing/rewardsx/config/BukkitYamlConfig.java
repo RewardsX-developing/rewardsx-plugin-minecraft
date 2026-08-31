@@ -44,6 +44,11 @@ public class BukkitYamlConfig implements PlatformConfig {
         return config.getInt(path, i);
     }
 
+    @Override
+    public boolean contains(String key) {
+        return config.contains(key);
+    }
+
 
     @Override
     public boolean getBoolean(String path, boolean bool) {

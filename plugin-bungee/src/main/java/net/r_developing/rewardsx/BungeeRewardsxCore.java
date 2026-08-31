@@ -17,6 +17,8 @@ import net.r_developing.rewardsx.platform.BungeeSchedulerWrapper;
 import net.r_developing.rewardsx.platform.BungeeServer;
 import net.r_developing.rewardsx.gui.BungeeDummyGUI;
 
+import java.io.File;
+
 public class BungeeRewardsxCore extends RewardsXCore {
     private final Plugin plugin;
 
@@ -37,6 +39,11 @@ public class BungeeRewardsxCore extends RewardsXCore {
         this.api = new Api();
 
         this.coreProxyListener = new AbstractProxyListener(getPlatformLogger(), getRServer(), null);
+    }
+
+    @Override
+    protected File getDataFolder() {
+        return plugin.getDataFolder();
     }
 
     @Override
@@ -72,16 +79,6 @@ public class BungeeRewardsxCore extends RewardsXCore {
     @Override
     protected PlatformConfig getMessagesConfigWrapper() {
         return new BungeeYamlConfig(plugin, "messages.yml");
-    }
-
-    @Override
-    protected PlatformConfig getRewardsConfigWrapper() {
-        return new BungeeYamlConfig(plugin, "rewards.yml");
-    }
-
-    @Override
-    protected PlatformConfig getUserDataConfigWrapper() {
-        return new BungeeYamlConfig(plugin, "userdata.yml");
     }
 
     @Override

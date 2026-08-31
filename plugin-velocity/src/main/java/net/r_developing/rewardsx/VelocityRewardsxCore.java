@@ -18,6 +18,7 @@ import net.r_developing.rewardsx.platform.VelocitySchedulerWrapper;
 import net.r_developing.rewardsx.platform.VelocityServer;
 import org.slf4j.Logger;
 
+import java.io.File;
 import java.nio.file.Path;
 
 public class VelocityRewardsxCore extends RewardsXCore {
@@ -45,6 +46,11 @@ public class VelocityRewardsxCore extends RewardsXCore {
         this.api = new Api();
 
         this.coreProxyListener = new AbstractProxyListener(getPlatformLogger(), getRServer(), null);
+    }
+
+    @Override
+    protected File getDataFolder() {
+        return plugin.getDataDirectory().toFile();
     }
 
     @Override
@@ -80,16 +86,6 @@ public class VelocityRewardsxCore extends RewardsXCore {
     @Override
     protected PlatformConfig getMessagesConfigWrapper() {
         return new VelocityYamlConfig(dataDirectory, "messages.yml");
-    }
-
-    @Override
-    protected PlatformConfig getRewardsConfigWrapper() {
-        return new VelocityYamlConfig(dataDirectory, "rewards.yml");
-    }
-
-    @Override
-    protected PlatformConfig getUserDataConfigWrapper() {
-        return new VelocityYamlConfig(dataDirectory, "userdata.yml");
     }
 
     @Override

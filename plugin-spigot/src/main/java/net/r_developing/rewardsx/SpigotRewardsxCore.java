@@ -16,10 +16,11 @@ import net.r_developing.rewardsx.platform.*;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 
+import java.io.File;
+
 public class SpigotRewardsxCore extends RewardsXCore {
     private final Plugin plugin;
 
-    // Istanze concrete
     private final PlatformLogger logger;
     private final PlatformScheduler scheduler;
     private final RServer server;
@@ -44,12 +45,15 @@ public class SpigotRewardsxCore extends RewardsXCore {
 
         this.coreProxyListener = new AbstractProxyListener(getPlatformLogger(), getRServer(), null);
 
-        // Inizializza il listener passando gui (può essere null all'avvio)
         this.spigotProxyListener = new SpigotProxyListener(plugin, coreProxyListener, (RewardsGUI) gui, adapter);
 
-        // Registrazione canali mantenuta nel costruttore
         plugin.getServer().getMessenger().registerIncomingPluginChannel(plugin, "rewardsx:command", spigotProxyListener);
         plugin.getServer().getMessenger().registerOutgoingPluginChannel(plugin, "rewardsx:command");
+    }
+
+    @Override
+    protected File getDataFolder() {
+        return plugin.getDataFolder();
     }
 
     @Override
@@ -88,16 +92,6 @@ public class SpigotRewardsxCore extends RewardsXCore {
     }
 
     @Override
-    protected PlatformConfig getRewardsConfigWrapper() {
-        return new BukkitYamlConfig(plugin, "rewards.yml");
-    }
-
-    @Override
-    protected PlatformConfig getUserDataConfigWrapper() {
-        return new BukkitYamlConfig(plugin, "userdata.yml");
-    }
-
-    @Override
     protected Translator getTranslator() {
         return new Translator(api);
     }
@@ -117,10 +111,8 @@ public class SpigotRewardsxCore extends RewardsXCore {
         RewardsGUI createdGui = new RewardsGUI(plugin, fetcher, messager, buy);
         this.gui = createdGui;
 
-        // Registra gli eventi della GUI click appena istanziata
         Bukkit.getPluginManager().registerEvents(createdGui, plugin);
 
-        // Aggiorna il riferimento nell'adapter e nel proxy listener già registrato
         this.spigotProxyListener.setRewardsGUI(createdGui);
         return createdGui;
     }
@@ -133,6 +125,7 @@ public class SpigotRewardsxCore extends RewardsXCore {
         return coreProxyListener;
     }
 
+    @Override
     protected RewardPollingTask getPollingTask(){
         return pollingTask;
     }

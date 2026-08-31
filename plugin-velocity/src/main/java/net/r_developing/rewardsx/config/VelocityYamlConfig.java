@@ -68,6 +68,28 @@ public class VelocityYamlConfig implements PlatformConfig {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public boolean contains(String path) {
+        if (data == null || path == null) return false;
+        if (!path.contains(".")) {
+            return data.containsKey(path);
+        }
+        String[] parts = path.split("\\.");
+        Map<String, Object> current = data;
+
+        for (int i = 0; i < parts.length - 1; i++) {
+            Object next = current.get(parts[i]);
+            if (next instanceof Map) {
+                current = (Map<String, Object>) next;
+            } else {
+                return false;
+            }
+        }
+
+        return current.containsKey(parts[parts.length - 1]);
+    }
+
+    @Override
     public boolean getBoolean(String path, boolean def) {
         Object val = get(path);
         if (val instanceof Boolean) {

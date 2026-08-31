@@ -17,6 +17,8 @@ import net.r_developing.rewardsx.api.core.commands.CoreCommands;
 import net.r_developing.rewardsx.api.core.language.Messager;
 import net.r_developing.rewardsx.api.core.network.Translator;
 
+import java.io.File;
+
 /**
  * Abstract base class for platform-specific RewardsX implementations.
  *
@@ -25,6 +27,7 @@ import net.r_developing.rewardsx.api.core.network.Translator;
  * implementations of the abstract dependency methods.
  *
  * <p>Dependency injection flow (onEnable):
+ *   0. Cleanup (renames legacy/obsolete files)
  *   1. Config (reads from disk)
  *   2. Platform (backend validation, language/proxy detection)
  *   3. API (sets platform reference)
@@ -78,6 +81,14 @@ public abstract class RewardsXCore {
     // These provide the platform-specific implementations needed for dependency injection.
 
     /**
+     * Returns the base data folder for the plugin where configuration files are stored.
+     * Needed to perform file-level operations such as migrating or renaming old configs.
+     *
+     * @return The plugin's data directory.
+     */
+    protected abstract File getDataFolder();
+
+    /**
      * Returns the platform-specific logger implementation.
      */
     protected abstract PlatformLogger getPlatformLogger();
@@ -113,16 +124,6 @@ public abstract class RewardsXCore {
     protected abstract PlatformConfig getMessagesConfigWrapper();
 
     /**
-     * Returns the rewards config wrapper (rewards.yml abstraction).
-     */
-    protected abstract PlatformConfig getRewardsConfigWrapper();
-
-    /**
-     * Returns the user data config wrapper (userdata.yml abstraction).
-     */
-    protected abstract PlatformConfig getUserDataConfigWrapper();
-
-    /**
      * Returns the message translator (backend translation client).
      */
     protected abstract Translator getTranslator();
@@ -156,6 +157,7 @@ public abstract class RewardsXCore {
      * Plugin enable handler - called by the platform when the plugin loads.
      *
      * <p>Orchestrates the full initialization sequence:
+     *   0. Check and rename obsolete data files.
      *   1. Config initialization
      *   2. Platform initialization and backend validation setup
      *   3. Messager initialization (with translator support)
@@ -177,6 +179,14 @@ public abstract class RewardsXCore {
         getPlatformLogger().info("Initializing RewardsX Core...");
 
         try {
+            // --- Step 0: Handle Legacy/Obsolete Files ---
+            // We ensure that outdated configuration files from older plugin versions
+            // do not interfere with the new data structure.
+            handleObsoleteFiles();
+
+            PlatformConfig mainConfigWrapper = getMainConfigWrapper();
+            handleObsoleteConfigKeys(mainConfigWrapper);
+
             // --- Step 1: Initialize Config ---
             // Reads from disk, auto-migrates missing keys from defaults, provides unified config access.
             this.config = new Config(
@@ -185,9 +195,7 @@ public abstract class RewardsXCore {
                     new MainConfig(),        // Default values for main config
                     new MessagesConfig(),    // Default values for messages config
                     getMainConfigWrapper(),
-                    getMessagesConfigWrapper(),
-                    getRewardsConfigWrapper(),
-                    getUserDataConfigWrapper()
+                    getMessagesConfigWrapper()
             );
 
             getPlatformLogger().info("Config initialized.");
@@ -309,5 +317,96 @@ public abstract class RewardsXCore {
      */
     public void onDisable() {
         getPlatformLogger().info("RewardsX is shutting down...");
+    }
+
+    /**
+     * Checks for the presence of deprecated configuration files in the plugin's data folder.
+     * If files such as 'userdata.yml' or 'rewards.yml' are found, they are automatically renamed
+     * by appending an '.obsolete' extension to their filenames.
+     *
+     * <p>This operation is crucial for server administrators, as it visibly signals that these
+     * specific files are no longer parsed or utilized by the current architecture of RewardsX.
+     * It prevents user confusion and avoids potential scenarios where administrators attempt to
+     * modify outdated files expecting plugin behavioral changes.
+     */
+    private void handleObsoleteFiles() {
+        File dataFolder = getDataFolder();
+
+        // If the data folder hasn't been created yet, there are no legacy files to worry about.
+        if (dataFolder == null || !dataFolder.exists()) {
+            return;
+        }
+
+        // List of specific file names that belong to older versions and are now deprecated.
+        String[] obsoleteFiles = {"userdata.yml", "rewards.yml"};
+
+        for (String fileName : obsoleteFiles) {
+            File legacyFile = new File(dataFolder, fileName);
+
+            // Check if the legacy file currently exists in the directory.
+            if (legacyFile.exists() && legacyFile.isFile()) {
+
+                // Define the new target file with the '.obsolete' suffix.
+                File renamedFile = new File(dataFolder, fileName + ".obsolete");
+
+                // If a previously marked obsolete file already exists, we delete it
+                // to make room for the current renaming operation.
+                if (renamedFile.exists()) {
+                    renamedFile.delete();
+                }
+
+                // Attempt to rename the file and log the outcome.
+                boolean success = legacyFile.renameTo(renamedFile);
+                if (success) {
+                    getPlatformLogger().info(
+                            "Found legacy file '" + fileName + "'. It has been renamed to '" +
+                                    renamedFile.getName() + "' because it is no longer used by this version of RewardsX."
+                    );
+                } else {
+                    getPlatformLogger().warning(
+                            "Found obsolete file '" + fileName + "' but failed to rename it. " +
+                                    "Please delete this file manually, as it is no longer utilized."
+                    );
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Checks the main configuration file (main.yml) for keys that are no longer used
+     * in the current version of RewardsX. If found, they are removed to keep the
+     * config file clean and prevent user confusion.
+     *
+     * @param mainConfig The platform-specific wrapper for main.yml
+     */
+    private void handleObsoleteConfigKeys(PlatformConfig mainConfig) {
+        boolean configUpdated = false;
+
+        // List of configuration keys that are now obsolete and should be removed.
+        String[] obsoleteKeys = {
+                "show_connect_message_on_join",
+                "enable_commands",
+                "offline_commands_enabled"
+        };
+
+        for (String key : obsoleteKeys) {
+            // We check if the key exists. (Requires a contains() method in PlatformConfig)
+            if (mainConfig.contains(key)) {
+                // Setting a key to null in YAML configurations completely removes it.
+                mainConfig.set(key, null);
+                configUpdated = true;
+
+                getPlatformLogger().info(
+                        "Removed obsolete key '" + key + "' from main.yml. This setting is no longer used."
+                );
+            }
+        }
+
+        // Save the file only if we actually removed something.
+        if (configUpdated) {
+            mainConfig.save();
+            getPlatformLogger().info("Saved main.yml after cleaning up obsolete keys.");
+        }
     }
 }

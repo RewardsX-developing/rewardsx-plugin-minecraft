@@ -62,6 +62,11 @@ public class BungeeYamlConfig implements PlatformConfig {
     }
 
     @Override
+    public boolean contains(String key) {
+        return config.contains(key);
+    }
+
+    @Override
     public boolean getBoolean(String path, boolean def) {
         return config.getBoolean(path, def);
     }
