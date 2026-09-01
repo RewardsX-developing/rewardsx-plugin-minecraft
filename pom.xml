@@ -6,7 +6,7 @@
 
     <groupId>net.r_developing.rewardsx</groupId>
     <artifactId>RewardsX</artifactId>
-    <version>2026.08.31</version>
+    <version>2026.09.01</version>
     <packaging>pom</packaging>
 
     <name>RewardsX</name>
