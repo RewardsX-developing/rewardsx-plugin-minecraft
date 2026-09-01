@@ -205,17 +205,6 @@ public class Platform {
     }
 
     /**
-     * Checks if the /rewardsx command is enabled.
-     *
-     * <p>When false, all /rewardsx commands are blocked (but background polling continues).
-     *
-     * @return true if commands are enabled
-     */
-    public boolean isRewardsXCommandsEnabled() {
-        return config.getMainConfig().getBoolean("enable_commands");
-    }
-
-    /**
      * Returns the language/locale code for this server.
      *
      * <p>Extracted from the config "language" setting (e.g. "en_US" -> "en").

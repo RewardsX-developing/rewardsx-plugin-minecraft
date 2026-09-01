@@ -62,9 +62,6 @@ public class CoreCommands {
      */
     private volatile boolean isProxy = false;
 
-    /** Master switch from config - lets an owner disable the /rewardsx command entirely. */
-    private boolean isCommandsEnabled = true;
-
     /** Plain constructor injection - no logic, just wiring up the dependencies. */
     public CoreCommands(PlatformGUI rewardsGUI, Messager messager, Config config, Version version,
                         Platform platform, Fetcher fetcher, Buy buy,
@@ -97,8 +94,6 @@ public class CoreCommands {
                 logger.warning("Platform invalid. Limited mode enabled.");
             }
         });
-
-        this.isCommandsEnabled = platform.isRewardsXCommandsEnabled();
     }
 
     /**
@@ -191,12 +186,6 @@ public class CoreCommands {
         // Limited mode = the backend has not (yet) confirmed this server.
         // Reward-related subcommands are blocked while in this state.
         boolean limitedMode = !platformValid;
-
-        // Owner has switched the command off in config.
-        if (!isCommandsEnabled) {
-            sender.sendMessage("§cCommands are disabled. Enable it on config!"); // §c = red
-            return false;
-        }
 
         // Bare "/rewardsx" -> help screen, which version depends on the mode.
         if (args.length == 0) {

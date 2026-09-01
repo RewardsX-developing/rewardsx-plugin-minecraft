@@ -2,6 +2,7 @@ package net.r_developing.rewardsx;
 
 import net.r_developing.rewardsx.api.core.RewardsXCore;
 import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
+import net.r_developing.rewardsx.api.core.platform.PlatformLogger;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Plugin extends JavaPlugin {
@@ -21,7 +22,12 @@ public final class Plugin extends JavaPlugin {
         }
     }
 
+
     public RewardPollingTask getPollingTask(){
         return core.getPollingTask();
+    }
+
+    public PlatformLogger getPlatformLogger(){
+        return core.getPlatformLogger();
     }
 }

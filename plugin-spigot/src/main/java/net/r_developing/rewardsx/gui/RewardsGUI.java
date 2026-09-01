@@ -1,9 +1,11 @@
 package net.r_developing.rewardsx.gui;
 
+import net.r_developing.rewardsx.Plugin;
 import net.r_developing.rewardsx.api.core.buy.Buy;
 import net.r_developing.rewardsx.api.core.gui.CoreRewardsGUI;
 import net.r_developing.rewardsx.api.core.language.Messager;
 import net.r_developing.rewardsx.api.core.network.Fetcher;
+import net.r_developing.rewardsx.api.core.platform.PlatformLogger;
 import net.r_developing.rewardsx.api.core.player.RPlayer;
 import net.r_developing.rewardsx.player.SpigotPlayer;
 import org.bukkit.Bukkit;
@@ -25,55 +27,82 @@ import java.util.*;
 
 
 public class RewardsGUI extends CoreRewardsGUI implements Listener {
-    private final JavaPlugin plugin;
+    private final Plugin plugin;
+    private final PlatformLogger log;
 
-    public RewardsGUI(JavaPlugin plugin, Fetcher fetcher, Messager messager, Buy buy) {
+
+    public RewardsGUI(Plugin plugin, Fetcher fetcher, Messager messager, Buy buy) {
         super(fetcher, messager, buy);
         this.plugin = plugin;
+        this.log = plugin.getPlatformLogger();
     }
 
-    // Implementa il metodo astratto definito nel core
     @Override
     protected void createAndOpenInventory(RPlayer player, int page, List<Map<String, String>> rewardsData, int startIndex, int endIndex, int maxPage) {
+        log.debug("Attempting to create and open GUI for player: " + player.getPlayerName() + ", page: " + page + " (Bounds: " + startIndex + " to " + endIndex + ", Max Page: " + maxPage + ")");
+
         if (!(player instanceof SpigotPlayer)) {
+            log.debug("Player type check failed. Expected SpigotPlayer, but got: " + player.getClass().getSimpleName());
             plugin.getLogger().warning("Cannot open GUI: player is not a SpigotPlayer");
             return;
         }
 
         Player bukkitPlayer = (Player) player.getPlayer();
-        Inventory gui = Bukkit.createInventory(null, 54, String.format(getMessager().get("guiTitle"), page + 1));
+        String guiTitle = String.format(getMessager().get("guiTitle"), page + 1);
 
+        log.debug("Creating 54-slot inventory with title: '" + guiTitle + "'");
+        Inventory gui = Bukkit.createInventory(null, 54, guiTitle);
+
+        log.debug("Populating GUI with rewards from index " + startIndex + " to " + (endIndex - 1));
         for (int i = startIndex; i < endIndex; i++) {
             Map<String, String> reward = getRewardAt(i);
-            if (reward == null) continue;
+
+            if (reward == null) {
+                log.debug("Reward at index " + i + " is null. Skipping.");
+                continue;
+            }
 
             String name = String.valueOf(reward.getOrDefault("name", "Unknown"));
             String description = String.valueOf(reward.getOrDefault("description", ""));
             int cost = 0;
+
             try {
                 cost = Integer.parseInt(String.valueOf(reward.getOrDefault("cost", "0")));
-            } catch (Exception ignored) {}
+            } catch (NumberFormatException e) {
+                log.debug("Failed to parse cost for reward '" + name + "' at index " + i + ". Defaulting to 0. Raw value: " + reward.get("cost"));
+            }
 
+            log.debug("Constructing ItemStack for reward: '" + name + "' (Cost: " + cost + ")");
             ItemStack chest = new ItemStack(Material.CHEST);
             ItemMeta meta = chest.getItemMeta();
+
             if (meta != null) {
                 meta.setDisplayName(ChatColor.YELLOW + name);
                 meta.setLore(Arrays.asList(
-                        ChatColor.GOLD + "" + cost,
+                        ChatColor.GOLD + String.valueOf(cost),
                         ChatColor.GRAY + description
                 ));
                 chest.setItemMeta(meta);
             }
 
-            gui.setItem(i - startIndex, chest);
+            int slot = i - startIndex;
+            gui.setItem(slot, chest);
+            log.debug("Placed reward '" + name + "' in GUI slot " + slot);
         }
 
-        if (page > 0) gui.setItem(45, createButton(getMessager().get("previousPage")));
-        if (page < maxPage) gui.setItem(53, createButton(getMessager().get("nextPage")));
+        if (page > 0) {
+            log.debug("Page is > 0. Adding 'Previous Page' button at slot 45.");
+            gui.setItem(45, createButton(getMessager().get("previousPage")));
+        }
 
+        if (page < maxPage) {
+            log.debug("Page is < maxPage. Adding 'Next Page' button at slot 53.");
+            gui.setItem(53, createButton(getMessager().get("nextPage")));
+        }
+
+        log.debug("Opening inventory for Bukkit player: " + bukkitPlayer.getName());
         bukkitPlayer.openInventory(gui);
     }
-
     private ItemStack createButton(String name) {
         ItemStack item = new ItemStack(Material.ARROW);
         ItemMeta meta = item.getItemMeta();
