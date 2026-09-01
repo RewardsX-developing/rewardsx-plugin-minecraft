@@ -32,7 +32,7 @@ public class SpigotRewardsxCore extends RewardsXCore {
 
     public SpigotRewardsxCore(Plugin plugin) {
         this.plugin = plugin;
-        this.logger = new BukkitLogger(plugin, getMainConfigWrapper());
+        this.logger = new BukkitLogger(plugin, config);
         this.scheduler = new BukkitSchedulerWrapper(plugin);
         this.server = new BukkitServer();
         this.adapter = new BukkitPlatformAdapter(plugin, logger);

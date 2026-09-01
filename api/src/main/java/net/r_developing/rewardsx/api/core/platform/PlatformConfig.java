@@ -11,8 +11,6 @@ import java.util.Set;
  * <p>Used for:
  *   - messages.yml - localized strings
  *   - config.yml - plugin settings (interval, debug mode, etc.)
- *   - rewards.yml - reward definitions and grant commands
- *   - userdata.yml - player UUID to user ID mappings
  *
  * <p>Implementations are provided by each platform (SpigotConfig wraps Bukkit's
  * FileConfiguration, VelocityConfig wraps a TOML library, etc.).

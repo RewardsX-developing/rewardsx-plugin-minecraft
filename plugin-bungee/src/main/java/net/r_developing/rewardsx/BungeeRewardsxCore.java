@@ -32,7 +32,7 @@ public class BungeeRewardsxCore extends RewardsXCore {
 
     public BungeeRewardsxCore(Plugin plugin) {
         this.plugin = plugin;
-        this.logger = new BungeeLogger(plugin, getMainConfigWrapper());
+        this.logger = new BungeeLogger(plugin, config);
         this.scheduler = new BungeeSchedulerWrapper(plugin);
         this.server = new BungeeServer(ProxyServer.getInstance());
         this.adapter = new BungeePlatformAdapter(plugin, logger, buy);

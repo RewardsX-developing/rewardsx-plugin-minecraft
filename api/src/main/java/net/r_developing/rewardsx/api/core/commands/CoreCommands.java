@@ -273,7 +273,7 @@ public class CoreCommands {
      * Tab completion for the first argument only.
      * <p>
      * Returns an empty list for deeper arguments (so "/rewardsx buy <tab>" suggests
-     * nothing). "buy" and "connect" are only offered once the platform is verified.
+     * nothing). "buy" is only offered once the platform is verified.
      * Note this does not filter by permission or by isCommandsEnabled.
      */
     public List<String> getTabCompletions(String[] args) {
@@ -282,7 +282,6 @@ public class CoreCommands {
         List<String> suggestions = new ArrayList<>(Arrays.asList("reload", "version"));
         if (platformValid) {
             suggestions.add("buy");
-            suggestions.add("connect");
         }
 
         // Prefix-match what the player has typed so far (case-insensitive), then sort.
@@ -308,7 +307,6 @@ public class CoreCommands {
         sender.sendMessage("§8--- §9RewardsX Help §8[§b" + platformName + "§8] ---");
         sender.sendMessage("");
         sender.sendMessage("§8§l• §b/rewardsx buy §f[name] §8- §7Open rewards GUI");
-        sender.sendMessage("§8§l• §b/rewardsx connect §f<code> §8- §7Link account to web interface");
         sender.sendMessage("§8§l• §b/rewardsx reload §8- §7Reload config");
         sender.sendMessage("§8§l• §b/rewardsx version §8- §7Check version");
     }

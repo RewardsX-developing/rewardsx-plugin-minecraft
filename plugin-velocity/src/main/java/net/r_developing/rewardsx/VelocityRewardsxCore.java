@@ -39,7 +39,7 @@ public class VelocityRewardsxCore extends RewardsXCore {
         this.proxyServer = proxyServer;
         this.dataDirectory = dataDirectory;
 
-        this.logger = new VelocityLogger(slf4jLogger, getMainConfigWrapper());
+        this.logger = new VelocityLogger(slf4jLogger, config);
         this.scheduler = new VelocitySchedulerWrapper(plugin, proxyServer);
         this.server = new VelocityServer(proxyServer);
         this.adapter = new VelocityPlatformAdapter(plugin, proxyServer, logger, dataDirectory, buy);

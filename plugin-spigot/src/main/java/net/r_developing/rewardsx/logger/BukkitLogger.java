@@ -8,9 +8,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class BukkitLogger implements PlatformLogger {
     private final JavaPlugin plugin;
-    private final PlatformConfig config;
+    private final Config config;
 
-    public BukkitLogger(JavaPlugin plugin, PlatformConfig config) {
+    public BukkitLogger(JavaPlugin plugin, Config config) {
         this.plugin = plugin;
         this.config = config;
     }
@@ -22,7 +22,7 @@ public class BukkitLogger implements PlatformLogger {
 
     @Override
     public void debug(String message) {
-        if(config.getBoolean("debug", false)){
+        if(config.getMainConfig().getBoolean("debug", false)){
             plugin.getLogger().info("§b[DEBUG]§r " + message);
         }
     }

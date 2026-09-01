@@ -8,9 +8,9 @@ import net.r_developing.rewardsx.api.core.platform.PlatformLogger;
 
 public class BungeeLogger implements PlatformLogger {
     private final Plugin plugin;
-    private final PlatformConfig config;
+    private final Config config;
 
-    public BungeeLogger(Plugin plugin, PlatformConfig config) {
+    public BungeeLogger(Plugin plugin, Config config) {
         this.plugin = plugin;
         this.config = config;
     }
@@ -22,7 +22,7 @@ public class BungeeLogger implements PlatformLogger {
 
     @Override
     public void debug(String message) {
-        if(config.getBoolean("debug", false)){
+        if(config.getMainConfig().getBoolean("debug", false)){
             plugin.getLogger().info("§b[DEBUG]§r " + message);
         }
     }
