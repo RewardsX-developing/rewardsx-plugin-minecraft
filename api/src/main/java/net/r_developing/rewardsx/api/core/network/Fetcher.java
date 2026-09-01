@@ -192,7 +192,7 @@ public class Fetcher {
     /**
      * Returns the rewards list, with field names mapped to user-friendly keys.
      *
-     * <p>The backend returns rewards with keys like "id_reward", "name_reward", etc.
+     * <p>The backend returns rewards with keys like "idReward", "nameReward", etc.
      * This method transforms them to "id", "name", "cost", "description" for cleaner
      * usage throughout the codebase.
      *
@@ -204,13 +204,15 @@ public class Fetcher {
         if (rewardsList == null) return Collections.emptyList();
 
         return rewardsList.stream()
-                // Transform each reward's field names.
                 .map(original -> {
                     Map<String, String> filtered = new HashMap<>();
-                    filtered.put("id", original.get("id_reward"));
-                    filtered.put("name", original.get("name_reward"));
-                    filtered.put("cost", original.get("cost_reward"));
-                    filtered.put("description", original.get("description_reward"));
+                    filtered.put("id", String.valueOf(original.get("idReward")));
+                    filtered.put("name", String.valueOf(original.get("nameReward")));
+                    filtered.put("cost", String.valueOf(original.get("costReward")));
+
+                    Object desc = original.get("descriptionReward");
+                    filtered.put("description", desc != null ? String.valueOf(desc) : "");
+
                     return filtered;
                 })
                 .collect(Collectors.toList());

@@ -27,7 +27,7 @@ import java.util.function.Consumer;
  */
 public class Api {
     /** Base URL for all API requests. */
-    private static final String BASE_URL = "https://api.rewardsx.net/v2/";
+    public static final String BASE_URL = "https://api.rewardsx.net/v2/";
 
     /** HTTP client (connection pooling, retry logic). */
     private final OkHttpClient client;
@@ -92,38 +92,51 @@ public class Api {
      * @param result    callback to invoke with the parsed response (maybe null on error)
      */
     public void send(String method, String endpoint, Map<String, Object> payload, Consumer<Map<String, Object>> result) {
-        // Check that the API was initialized.
+        send(method, endpoint, null, payload, result);
+    }
+
+    /**
+     * Sends an HTTP request to the API and processes the JSON response.
+     *
+     * <p>This is the high-level entry point. It:
+     *   1. Validates that the API is initialized (id and key are set)
+     *   2. Adds the platform ID to the payload
+     *   3. Calls sendRequest() to execute the HTTP call async
+     *   4. Parses the JSON response into nested Maps and Lists
+     *   5. Invokes the result callback with the parsed data (or null on failure)
+     *
+     * @param method    "GET" or "POST"
+     * @param endpoint  the API endpoint (e.g. "complete-buy"), appended to BASE_URL
+     * @param headers   custom HTTP headers to include in the request (can be null)
+     * @param payload   request data (will be null-checked and converted to empty map if needed)
+     * @param result    callback to invoke with the parsed response (maybe null on error)
+     */
+    public void send(String method, String endpoint, Map<String, String> headers, Map<String, Object> payload, Consumer<Map<String, Object>> result) {
         if (id == null || key == null) {
             if (platform.isDebug()) System.err.println("API not initialized. Call init(platform, apiKey) first");
             result.accept(null);
             return;
         }
 
-        // Prepare the payload - create an empty map if none was provided.
         if (payload == null) {
             payload = new HashMap<>();
         }
-        // Add the platform ID to the payload (the backend uses this to identify the server).
         payload.put("platform", id);
 
-        // Execute the async HTTP request and parse the response.
-        sendRequest(method, endpoint, payload, responseBody -> {
+        sendRequest(method, endpoint, headers, payload, responseBody -> {
             if (responseBody == null) {
                 result.accept(null);
                 return;
             }
 
             try {
-                // Parse the JSON response string into a JsonObject.
                 JsonObject jsonObject = JsonParser.parseString(responseBody).getAsJsonObject();
                 Map<String, Object> resultMap = new HashMap<>();
 
-                // Recursively convert each JSON field to a Java Map/List/primitive.
                 for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
                     resultMap.put(entry.getKey(), convertJsonElement(entry.getValue()));
                 }
 
-                // Invoke the callback with the parsed response.
                 result.accept(resultMap);
                 if (platform.isDebug()) System.out.println(resultMap);
             } catch (Exception e) {
@@ -139,6 +152,7 @@ public class Api {
      * <p>Builds an OkHttp Request with:
      *   - Authorization header (the secret key)
      *   - Platform header (the platform ID)
+     *   - Custom headers (if provided)
      *   - URL with query parameters (for GET) or JSON body (for POST)
      *
      * <p>Enqueues the request async - when the response arrives, onSuccess is
@@ -146,15 +160,23 @@ public class Api {
      *
      * @param method      "GET" or "POST"
      * @param endpoint    the API path (e.g. "complete-buy")
+     * @param headers     custom HTTP headers to append (can be null)
      * @param payload     request data
      * @param onSuccess   callback to invoke with the response body (or null on error)
      */
-    private void sendRequest(String method, String endpoint, Map<String, Object> payload, Consumer<String> onSuccess) {
+    private void sendRequest(String method, String endpoint, Map<String, String> headers, Map<String, Object> payload, Consumer<String> onSuccess) {
         try {
             // Start building the request - add auth headers.
             Request.Builder requestBuilder = new Request.Builder()
                     .addHeader("Authorization", "key " + key)
                     .addHeader("platform", id);
+
+            // Add any custom headers provided
+            if (headers != null) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    requestBuilder.addHeader(entry.getKey(), entry.getValue());
+                }
+            }
 
             if (platform.isDebug()) {
                 System.out.println("Requesting API (" + method.toUpperCase() + ") with credentials: id=" + id);

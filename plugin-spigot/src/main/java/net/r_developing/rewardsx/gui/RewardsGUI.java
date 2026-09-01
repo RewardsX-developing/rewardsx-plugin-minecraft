@@ -78,10 +78,13 @@ public class RewardsGUI extends CoreRewardsGUI implements Listener {
 
             if (meta != null) {
                 meta.setDisplayName(ChatColor.YELLOW + name);
-                meta.setLore(Arrays.asList(
-                        ChatColor.GOLD + String.valueOf(cost),
-                        ChatColor.GRAY + description
-                ));
+
+                List<String> lore = new ArrayList<>();
+                lore.add(ChatColor.GOLD + String.valueOf(cost));
+
+                lore.addAll(wrapLore(description, 40, ChatColor.GRAY));
+
+                meta.setLore(lore);
                 chest.setItemMeta(meta);
             }
 
@@ -103,6 +106,32 @@ public class RewardsGUI extends CoreRewardsGUI implements Listener {
         log.debug("Opening inventory for Bukkit player: " + bukkitPlayer.getName());
         bukkitPlayer.openInventory(gui);
     }
+
+
+    /**
+     * Wrap a lore with color
+     */
+    private List<String> wrapLore(String text, int lineLength, ChatColor color) {
+        List<String> wrapped = new ArrayList<>();
+        if (text == null || text.isBlank()) {
+            return wrapped;
+        }
+
+        String[] words = text.split(" ");
+        StringBuilder currentLine = new StringBuilder(color.toString());
+
+        for (String word : words) {
+            if (currentLine.length() - 2 + word.length() > lineLength) {
+                wrapped.add(currentLine.toString().trim());
+                currentLine = new StringBuilder(color.toString());
+            }
+            currentLine.append(word).append(" ");
+        }
+
+        wrapped.add(currentLine.toString().trim());
+        return wrapped;
+    }
+
     private ItemStack createButton(String name) {
         ItemStack item = new ItemStack(Material.ARROW);
         ItemMeta meta = item.getItemMeta();
@@ -113,7 +142,7 @@ public class RewardsGUI extends CoreRewardsGUI implements Listener {
         return item;
     }
 
-    // Listener per i click registrato da Bukkit
+    // Listener
     @EventHandler
     public void handleClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
