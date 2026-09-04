@@ -62,4 +62,5 @@ public interface PlatformLogger {
      * @param message the debug text
      */
     void debug(String message);
+
 }

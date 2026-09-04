@@ -1,16 +1,15 @@
 package net.r_developing.rewardsx.logger;
 
-import net.r_developing.rewardsx.api.Configs.MainConfig;
-import net.r_developing.rewardsx.api.core.config.Config;
+import net.r_developing.rewardsx.Plugin;
 import net.r_developing.rewardsx.api.core.platform.PlatformConfig;
 import net.r_developing.rewardsx.api.core.platform.PlatformLogger;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.ChatColor;
 
 public class BukkitLogger implements PlatformLogger {
-    private final JavaPlugin plugin;
-    private final Config config;
+    private final Plugin plugin;
+    private final PlatformConfig config;
 
-    public BukkitLogger(JavaPlugin plugin, Config config) {
+    public BukkitLogger(Plugin plugin, PlatformConfig config) {
         this.plugin = plugin;
         this.config = config;
     }
@@ -22,8 +21,8 @@ public class BukkitLogger implements PlatformLogger {
 
     @Override
     public void debug(String message) {
-        if(config.getMainConfig().getBoolean("debug", false)){
-            plugin.getLogger().info("§b[DEBUG]§r " + message);
+        if(config != null && config.getBoolean("debug", false)){
+            plugin.getLogger().info(ChatColor.AQUA + "[DEBUG] " + ChatColor.WHITE + message);
         }
     }
 
@@ -31,4 +30,5 @@ public class BukkitLogger implements PlatformLogger {
     public void warning(String message) {
         plugin.getLogger().warning(message);
     }
+
 }

@@ -13,22 +13,19 @@ import org.slf4j.Logger;
 
 import java.nio.file.Path;
 
+@Getter
 @com.velocitypowered.api.plugin.Plugin(
         id = "rewardsx",
         name = "RewardsX",
-        version = "2026.08.30",
+        version = "2026.09.01",
         description = "RewardsX Minecraft plugin for Velocity",
         authors = {"R_Developing"}
 )
 public final class Plugin {
 
-    @Getter
     private final ProxyServer server;
-    @Getter
     private final PluginContainer pluginContainer;
-    @Getter
     private final Logger logger;
-    @Getter
     private final Path dataDirectory;
 
     private VelocityRewardsxCore core;

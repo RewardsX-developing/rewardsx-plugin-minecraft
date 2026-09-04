@@ -1,16 +1,14 @@
 package net.r_developing.rewardsx.logger;
 
-import net.md_5.bungee.api.plugin.Plugin;
-import net.r_developing.rewardsx.api.Configs.MainConfig;
-import net.r_developing.rewardsx.api.core.config.Config;
+import net.r_developing.rewardsx.Plugin;
 import net.r_developing.rewardsx.api.core.platform.PlatformConfig;
 import net.r_developing.rewardsx.api.core.platform.PlatformLogger;
 
 public class BungeeLogger implements PlatformLogger {
     private final Plugin plugin;
-    private final Config config;
+    private final PlatformConfig config;
 
-    public BungeeLogger(Plugin plugin, Config config) {
+    public BungeeLogger(Plugin plugin, PlatformConfig config) {
         this.plugin = plugin;
         this.config = config;
     }
@@ -22,10 +20,11 @@ public class BungeeLogger implements PlatformLogger {
 
     @Override
     public void debug(String message) {
-        if(config.getMainConfig().getBoolean("debug", false)){
+        if(config != null && config.getBoolean("debug", false)){
             plugin.getLogger().info("§b[DEBUG]§r " + message);
         }
     }
+
 
     @Override
     public void warning(String msg) {

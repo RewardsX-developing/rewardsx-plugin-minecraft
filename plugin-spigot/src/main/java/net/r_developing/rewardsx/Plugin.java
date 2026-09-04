@@ -1,10 +1,12 @@
 package net.r_developing.rewardsx;
 
+import lombok.Getter;
 import net.r_developing.rewardsx.api.core.RewardsXCore;
 import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
 import net.r_developing.rewardsx.api.core.platform.PlatformLogger;
 import org.bukkit.plugin.java.JavaPlugin;
 
+@Getter
 public final class Plugin extends JavaPlugin {
 
     private SpigotRewardsxCore core;
