@@ -233,7 +233,7 @@ public abstract class RewardsXCore {
                 config.getMainConfig().save();
             }
 
-            this.queueManager = new RewardQueueManager(
+            this.queueManager = new RewardQueueManager(getRServer(),
                     getAdapter(), getScheduler()
             );
             queueManager.setCommandExecutor(getCommandExecutor());

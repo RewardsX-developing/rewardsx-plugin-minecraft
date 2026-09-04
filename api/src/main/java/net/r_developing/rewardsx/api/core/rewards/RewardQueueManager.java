@@ -4,6 +4,8 @@ import lombok.Setter;
 import net.r_developing.rewardsx.api.core.platform.PlatformAdapter;
 import net.r_developing.rewardsx.api.core.platform.PlatformCommandExecutor;
 import net.r_developing.rewardsx.api.core.platform.PlatformScheduler;
+import net.r_developing.rewardsx.api.core.platform.RServer;
+import net.r_developing.rewardsx.api.core.player.RPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,19 +15,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RewardQueueManager {
 
     private final Map<String, List<PendingReward>> offlineQueue = new ConcurrentHashMap<>();
+    private final RServer server;
     private final PlatformAdapter adapter;
     @Setter
     private PlatformCommandExecutor commandExecutor;
     private final PlatformScheduler scheduler;
 
-    public RewardQueueManager(PlatformAdapter adapter, PlatformScheduler scheduler) {
+    public RewardQueueManager(RServer server, PlatformAdapter adapter, PlatformScheduler scheduler) {
+        this.server = server;
         this.adapter = adapter;
         this.scheduler = scheduler;
     }
 
     public void processReward(String userId, String transactionId, String username, List<RewardCommand> commands, Runnable onComplete) {
         boolean requiresOnline = commands.stream().anyMatch(RewardCommand::isRequireOnline);
-
         if (adapter.isPlayerOnline(username)) {
             executeCommands(username, commands);
             onComplete.run();
@@ -40,12 +43,15 @@ public class RewardQueueManager {
 
     private void executeCommands(String username, List<RewardCommand> commands) {
         scheduler.runSync(() -> {
+            RPlayer player = server.getPlayerExact(username);
+            String targetName = (player != null) ? player.getPlayerName() : username;
+
             for (RewardCommand cmd : commands) {
                 String finalCmd = cmd.command()
-                        .replace("[player]", username)
-                        .replace("%player%", username);
+                        .replace("[player]", targetName)
+                        .replace("%player%", targetName);
 
-                commandExecutor.dispatchConsoleCommand(finalCmd, null, null);
+                commandExecutor.dispatchConsoleCommand(finalCmd, player, targetName);
             }
         });
     }
