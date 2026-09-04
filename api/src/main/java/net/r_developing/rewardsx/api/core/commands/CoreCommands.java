@@ -148,6 +148,7 @@ public class CoreCommands {
                 // Re-read config files, restart the platform connection, and refresh
                 // the cached flags. platformValid is updated asynchronously again.
                 config.reloadConfigs();
+                fetcher.reload();
                 platform.checkAndStart(fetcher, messager, version);
                 this.isProxy = platform.isProxyOrBungee();
                 platform.isValid(valid -> this.platformValid = valid);

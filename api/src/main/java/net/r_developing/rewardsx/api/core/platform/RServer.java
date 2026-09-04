@@ -1,5 +1,6 @@
 package net.r_developing.rewardsx.api.core.platform;
 
+import net.r_developing.rewardsx.api.core.network.Fetcher;
 import net.r_developing.rewardsx.api.core.player.RPlayer;
 import net.r_developing.rewardsx.api.core.player.RPlayerOffline;
 

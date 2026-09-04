@@ -43,7 +43,7 @@ public class Fetcher {
     /** HTTP client for backend API calls. */
     private final Api api;
     /** Polling interval in server ticks (20 ticks = 1 second). */
-    private final long intervalTicks;
+    private long intervalTicks;
     /** Config file access (for the platform secret key). */
     private final Config config;
     /** Platform detection and ID access. */
@@ -216,5 +216,12 @@ public class Fetcher {
                     return filtered;
                 })
                 .collect(Collectors.toList());
+    }
+
+    public void reload(){
+        scheduler.cancelAll();
+        config.getMainConfig().reload();
+        this.intervalTicks = config.getMainConfig().getInt("fetch_interval", 60);
+        start();
     }
 }

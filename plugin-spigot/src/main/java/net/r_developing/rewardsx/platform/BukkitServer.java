@@ -1,5 +1,7 @@
 package net.r_developing.rewardsx.platform;
 
+import net.r_developing.rewardsx.Plugin;
+import net.r_developing.rewardsx.api.core.network.Fetcher;
 import net.r_developing.rewardsx.api.core.player.RPlayer;
 import net.r_developing.rewardsx.api.core.player.RPlayerOffline;
 import net.r_developing.rewardsx.api.core.platform.RServer;
@@ -12,6 +14,12 @@ import org.bukkit.entity.Player;
 import java.util.UUID;
 
 public class BukkitServer implements RServer {
+
+    private final Plugin plugin;
+
+    public BukkitServer(Plugin plugin){
+        this.plugin = plugin;
+    }
 
     @Override
     public RPlayer getPlayerExact(String name) {

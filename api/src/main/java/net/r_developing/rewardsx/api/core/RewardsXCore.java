@@ -148,6 +148,7 @@ public abstract class RewardsXCore {
      */
     protected abstract AbstractProxyListener getCoreProxyListener();
 
+
     /**
      * Returns the reward polling task (fetches pending grants periodically).
      */
@@ -219,6 +220,7 @@ public abstract class RewardsXCore {
                     getAdapter()
             );
 
+            int interval = config.getMainConfig().getInt("fetch_interval", 60);
             // --- Step 5: Initialize Fetcher ---
             // Backend polling client - fetches rewards list and update checks.
             this.fetcher = new Fetcher(
@@ -228,7 +230,7 @@ public abstract class RewardsXCore {
                     config,
                     platform,
                     null,           // Buy is set later
-                    60              // Poll interval: 60 seconds
+                    interval             // Poll interval: 60 seconds
             );
 
             // --- Step 6: Initialize Buy and Wire to Fetcher ---

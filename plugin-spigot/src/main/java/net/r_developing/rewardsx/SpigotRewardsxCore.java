@@ -3,6 +3,7 @@ package net.r_developing.rewardsx;
 import net.r_developing.rewardsx.api.core.RewardsXCore;
 import net.r_developing.rewardsx.api.core.gui.PlatformGUI;
 import net.r_developing.rewardsx.api.core.network.Api;
+import net.r_developing.rewardsx.api.core.network.Fetcher;
 import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
 import net.r_developing.rewardsx.api.core.network.Translator;
 import net.r_developing.rewardsx.api.core.platform.*;
@@ -34,7 +35,7 @@ public class SpigotRewardsxCore extends RewardsXCore {
         this.plugin = plugin;
         this.logger = new BukkitLogger(plugin, getMainConfigWrapper());
         this.scheduler = new BukkitSchedulerWrapper(plugin);
-        this.server = new BukkitServer();
+        this.server = new BukkitServer(plugin);
         this.adapter = new BukkitPlatformAdapter(plugin, logger);
         this.api = new Api();
         this.gui = adapter.getGUI();
