@@ -143,17 +143,15 @@ public class CoreCommands {
                         logger.warning("Error: Wrong Token of GameServer.");
                     }
                 });
+
+                reloadPlugin();
                 return true;
 
             case "reload":
             case "rel":
                 // Re-read config files, restart the platform connection, and refresh
                 // the cached flags. platformValid is updated asynchronously again.
-                config.reloadConfigs();
-                fetcher.reload();
-                platform.checkAndStart(fetcher, messager, version);
-                this.isProxy = platform.isProxyOrBungee();
-                platform.isValid(valid -> this.platformValid = valid);
+                reloadPlugin();
                 logger.info("Config reloaded from console.");
                 return true;
 
@@ -205,11 +203,7 @@ public class CoreCommands {
             case "rel":
                 // Admin-only. Same refresh sequence as the console version.
                 if (hasPermission(sender, "rewardsx.reload")) {
-                    config.reloadConfigs();
-                    platform.checkAndStart(fetcher, messager, version);
-
-                    this.isProxy = platform.isProxyOrBungee();
-                    platform.isValid(valid -> this.platformValid = valid);
+                    reloadPlugin();
                     sender.sendMessage(messager.get("reload"));
                 } else {
                     sender.sendMessage(messager.get("noPermission"));
@@ -342,5 +336,14 @@ public class CoreCommands {
         sender.sendMessage("§8§l• §b/rewardsx version §8- §7Check version");
         sender.sendMessage("");
         sender.sendMessage("§cPlatform invalid. Use /rewardsx reload");
+    }
+
+    private void reloadPlugin(){
+        config.reloadConfigs();
+        fetcher.reload();
+        platform.checkAndStart(fetcher, messager, version);
+        this.isProxy = platform.isProxyOrBungee();
+        platform.isValid(valid -> this.platformValid = valid);
+
     }
 }
