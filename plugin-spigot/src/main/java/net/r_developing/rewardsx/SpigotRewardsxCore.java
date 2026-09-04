@@ -3,12 +3,12 @@ package net.r_developing.rewardsx;
 import net.r_developing.rewardsx.api.core.RewardsXCore;
 import net.r_developing.rewardsx.api.core.gui.PlatformGUI;
 import net.r_developing.rewardsx.api.core.network.Api;
-import net.r_developing.rewardsx.api.core.network.Fetcher;
 import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
 import net.r_developing.rewardsx.api.core.network.Translator;
 import net.r_developing.rewardsx.api.core.platform.*;
 import net.r_developing.rewardsx.api.core.proxy.AbstractProxyListener;
 import net.r_developing.rewardsx.api.core.proxy.ProxySender;
+import net.r_developing.rewardsx.api.core.rewards.RewardQueueManager;
 import net.r_developing.rewardsx.config.BukkitYamlConfig;
 import net.r_developing.rewardsx.gui.RewardsGUI;
 import net.r_developing.rewardsx.listener.SpigotProxyListener;
@@ -70,6 +70,11 @@ public class SpigotRewardsxCore extends RewardsXCore {
     @Override
     protected RServer getRServer() {
         return server;
+    }
+
+    @Override
+    protected RewardQueueManager getQueueManager(){
+        return queueManager;
     }
 
     @Override

@@ -9,8 +9,10 @@ import net.r_developing.rewardsx.api.core.network.Translator;
 import net.r_developing.rewardsx.api.core.platform.*;
 import net.r_developing.rewardsx.api.core.proxy.AbstractProxyListener;
 import net.r_developing.rewardsx.api.core.proxy.ProxySender;
+import net.r_developing.rewardsx.api.core.rewards.RewardQueueManager;
 import net.r_developing.rewardsx.config.VelocityYamlConfig;
 import net.r_developing.rewardsx.gui.VelocityDummyGUI;
+import net.r_developing.rewardsx.listener.VelocityJoinListener;
 import net.r_developing.rewardsx.logger.VelocityLogger;
 import net.r_developing.rewardsx.platform.VelocityCommandExecutor;
 import net.r_developing.rewardsx.platform.VelocityPlatformAdapter;
@@ -41,7 +43,7 @@ public class VelocityRewardsxCore extends RewardsXCore {
 
         this.logger = new VelocityLogger(plugin, slf4jLogger, getMainConfigWrapper());
         this.scheduler = new VelocitySchedulerWrapper(plugin, proxyServer);
-        this.server = new VelocityServer(proxyServer);
+        this.server = new VelocityServer(plugin, proxyServer);
         this.adapter = new VelocityPlatformAdapter(plugin, proxyServer, logger, dataDirectory, buy);
         this.api = new Api();
 
@@ -52,6 +54,7 @@ public class VelocityRewardsxCore extends RewardsXCore {
     protected File getDataFolder() {
         return plugin.getDataDirectory().toFile();
     }
+
 
     @Override
     protected PlatformLogger getPlatformLogger() {
@@ -66,6 +69,11 @@ public class VelocityRewardsxCore extends RewardsXCore {
     @Override
     protected RServer getRServer() {
         return server;
+    }
+
+    @Override
+    protected RewardQueueManager getQueueManager() {
+        return queueManager;
     }
 
     @Override

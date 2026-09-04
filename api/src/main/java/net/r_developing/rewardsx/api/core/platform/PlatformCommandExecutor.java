@@ -75,7 +75,7 @@ public interface PlatformCommandExecutor {
      * Returns a filtered list of suggestions based on what the player has typed so far.
      *
      * <p>Example:
-     *   Player types: /rewardsx bu
+     *   Player types: /rewardsx buy
      *   Returns: ["buy", "bugs"]
      *
      * <p>The filtering (case-insensitive prefix matching) is typically done by

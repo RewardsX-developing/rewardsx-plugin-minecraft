@@ -100,10 +100,11 @@ public class RewardPollingTask {
             // Fetch all pending rewards from the backend and process each one.
             rewardFetcher.fetchPendingRewards(platformId, secret, inFlight, (userId, transactionId, username, commands) -> {
                 // Protect against the case where Buy is null (defensive programming).
-                if (buy != null) {
-                    // Execute the grant and remove from inFlight when done.
-                    buy.confirm(userId, transactionId, username, commands, () -> inFlight.remove(userId + ":" + transactionId));
-                }
+                rewardFetcher.getQueueManager().processReward(userId, transactionId, username, commands, () -> {
+                    buy.confirm(userId, transactionId, username, () -> {
+                        inFlight.remove(userId + ":" + transactionId);
+                    });
+                });
             });
 
         }, 20L, intervalTicks); // Initial delay: 20 ticks (1 sec), repeat every intervalTicks.

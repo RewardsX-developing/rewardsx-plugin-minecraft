@@ -48,6 +48,8 @@ public interface PlatformAdapter {
      */
     PlatformPlugin getInstance();
 
+    PlatformCommandExecutor getCommandExecutor();
+
     /**
      * Returns the GUI implementation for this platform.
      *
@@ -89,6 +91,14 @@ public interface PlatformAdapter {
      * inventory click, chat, etc.).
      */
     void registerCommandsAndEvents();
+
+
+    /**
+     * Detect if a player is online.
+     *
+     * <p>Used to determine if a player is online on this server
+     */
+    boolean isPlayerOnline(String username);
 
     /**
      * Enum for platform type detection.

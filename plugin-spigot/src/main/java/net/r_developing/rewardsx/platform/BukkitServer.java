@@ -68,7 +68,7 @@ public class BukkitServer implements RServer {
     @Override
     public void registerEvents(Object... listeners) {
         for (Object listener : listeners) {
-            Bukkit.getPluginManager().registerEvents((org.bukkit.event.Listener) listener, Bukkit.getPluginManager().getPlugins()[0]);
+            Bukkit.getPluginManager().registerEvents((org.bukkit.event.Listener) listener, plugin);
         }
     }
 }

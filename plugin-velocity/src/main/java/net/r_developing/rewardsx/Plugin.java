@@ -9,6 +9,8 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import lombok.Getter;
 import net.r_developing.rewardsx.api.core.network.RewardPollingTask;
+import net.r_developing.rewardsx.api.core.platform.PlatformCommandExecutor;
+import net.r_developing.rewardsx.listener.VelocityJoinListener;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
@@ -42,6 +44,7 @@ public final class Plugin {
     public void onProxyInitialization(ProxyInitializeEvent event) {
         this.core = new VelocityRewardsxCore(this, server, logger, dataDirectory);
         this.core.onEnable();
+        this.core.getRServer().registerEvents(new VelocityJoinListener(this.core.getQueueManager()));
     }
 
     @Subscribe
@@ -54,5 +57,7 @@ public final class Plugin {
     public RewardPollingTask getPollingTask(){
         return core.getPollingTask();
     }
+
+    public PlatformCommandExecutor getPlatformCommandExecutor(){ return core.getCommandExecutor(); }
 
 }

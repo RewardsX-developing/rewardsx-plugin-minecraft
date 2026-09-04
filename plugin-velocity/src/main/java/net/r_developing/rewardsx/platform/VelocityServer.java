@@ -3,6 +3,7 @@ package net.r_developing.rewardsx.platform;
 import com.velocitypowered.api.event.EventManager;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import net.r_developing.rewardsx.Plugin;
 import net.r_developing.rewardsx.api.core.platform.RServer;
 import net.r_developing.rewardsx.api.core.player.RPlayer;
 import net.r_developing.rewardsx.api.core.player.RPlayerOffline;
@@ -14,8 +15,10 @@ import java.util.UUID;
 public class VelocityServer implements RServer {
     private final ProxyServer proxyServer;
     private final EventManager events;
+    private final Plugin plugin;
 
-    public VelocityServer(ProxyServer proxyServer) {
+    public VelocityServer(Plugin plugin, ProxyServer proxyServer) {
+        this.plugin = plugin;
         this.proxyServer = proxyServer;
         this.events = proxyServer.getEventManager();
     }
@@ -64,7 +67,7 @@ public class VelocityServer implements RServer {
     @Override
     public void registerEvents(Object... listeners) {
         for (Object listener : listeners) {
-            events.register(proxyServer.getPluginManager().getPlugin("RewardsX"), listener);  // Velocity accepts raw Object
+            events.register(plugin, listener);  // Velocity accepts raw Object
         }
     }
 }

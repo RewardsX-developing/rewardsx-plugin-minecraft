@@ -12,6 +12,7 @@ import net.r_developing.rewardsx.api.core.platform.*;
 import net.r_developing.rewardsx.api.core.proxy.AbstractProxyListener;
 import net.r_developing.rewardsx.api.core.proxy.ProxySender;
 import net.r_developing.rewardsx.api.core.rewards.RewardFetcher;
+import net.r_developing.rewardsx.api.core.rewards.RewardQueueManager;
 import net.r_developing.rewardsx.api.core.updater.Version;
 import net.r_developing.rewardsx.api.core.commands.CoreCommands;
 import net.r_developing.rewardsx.api.core.language.Messager;
@@ -77,6 +78,8 @@ public abstract class RewardsXCore {
     /** Periodic task that fetches pending rewards from backend. */
     protected RewardPollingTask pollingTask;
 
+    protected RewardQueueManager queueManager;
+
     // ===== Abstract Methods (Implemented by Platform-Specific Subclasses) =====
     // These provide the platform-specific implementations needed for dependency injection.
 
@@ -102,6 +105,8 @@ public abstract class RewardsXCore {
      * Returns the platform-specific server access (player lookup, command dispatch).
      */
     protected abstract RServer getRServer();
+
+    protected abstract RewardQueueManager getQueueManager();
 
     /**
      * Returns the platform adapter (type detection, event registration, utilities).
@@ -221,6 +226,18 @@ public abstract class RewardsXCore {
             );
 
             int interval = config.getMainConfig().getInt("fetch_interval", 60);
+            if(interval < 60){
+                getPlatformLogger().warning("WARNING: The fetch_interval in config must be over 60. Your fetch_interval: " + interval + ". Setting it as 60.");
+                interval = 60;
+                config.getMessagesConfig().set("fetch_interval", 60);
+                config.getMessagesConfig().save();
+            }
+
+            this.queueManager = new RewardQueueManager(
+                    getAdapter(), getScheduler()
+            );
+            queueManager.setCommandExecutor(getCommandExecutor());
+
             // --- Step 5: Initialize Fetcher ---
             // Backend polling client - fetches rewards list and update checks.
             this.fetcher = new Fetcher(
@@ -230,7 +247,8 @@ public abstract class RewardsXCore {
                     config,
                     platform,
                     null,           // Buy is set later
-                    interval             // Poll interval: 60 seconds
+                    interval,             // Poll interval: 60 seconds
+                    queueManager
             );
 
             // --- Step 6: Initialize Buy and Wire to Fetcher ---
@@ -248,7 +266,7 @@ public abstract class RewardsXCore {
             );
 
             // Create the reward fetcher (fetches pending grants from backend).
-            RewardFetcher rewardFetcher = new RewardFetcher(getApi(), getPlatformLogger(), buy);
+            RewardFetcher rewardFetcher = new RewardFetcher(getApi(), getPlatformLogger(), buy, queueManager);
 
             // Wire cross-dependencies: Fetcher needs Buy for executing grants.
             fetcher.setBuy(buy);

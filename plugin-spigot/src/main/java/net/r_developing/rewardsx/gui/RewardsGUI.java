@@ -10,7 +10,6 @@ import net.r_developing.rewardsx.api.core.player.RPlayer;
 import net.r_developing.rewardsx.player.SpigotPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,16 +19,16 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Method;
 import java.util.*;
-
 
 public class RewardsGUI extends CoreRewardsGUI implements Listener {
     private final Plugin plugin;
     private final PlatformLogger log;
 
+    // Map to track which category each player is currently viewing
+    private final Map<UUID, String> playerCategories = new HashMap<>();
 
     public RewardsGUI(Plugin plugin, Fetcher fetcher, Messager messager, Buy buy) {
         super(fetcher, messager, buy);
@@ -38,108 +37,107 @@ public class RewardsGUI extends CoreRewardsGUI implements Listener {
     }
 
     @Override
+    public void open(RPlayer rPlayer, int page) {
+        Player player = (Player) rPlayer.getPlayer();
+        String currentCat = playerCategories.getOrDefault(player.getUniqueId(), "All");
+        openCategoryGUI(player, page, currentCat);
+    }
+
+    @Override
     protected void createAndOpenInventory(RPlayer player, int page, List<Map<String, String>> rewardsData, int startIndex, int endIndex, int maxPage) {
-        log.debug("Attempting to create and open GUI for player: " + player.getPlayerName() + ", page: " + page + " (Bounds: " + startIndex + " to " + endIndex + ", Max Page: " + maxPage + ")");
+        // We ignore the standard Core parameters and redirect to our custom category system
+        open(player, page);
+    }
 
-        if (!(player instanceof SpigotPlayer)) {
-            log.debug("Player type check failed. Expected SpigotPlayer, but got: " + player.getClass().getSimpleName());
-            plugin.getLogger().warning("Cannot open GUI: player is not a SpigotPlayer");
-            return;
-        }
+    /**
+     * Builds the GUI with the category bar at the top and filtered rewards in the center.
+     */
+    private void openCategoryGUI(Player bukkitPlayer, int page, String category) {
+        UUID uuid = bukkitPlayer.getUniqueId();
+        playerCategories.put(uuid, category);
+        getPlayerPages().put(uuid, page);
 
-        Player bukkitPlayer = (Player) player.getPlayer();
-        String guiTitle = String.format(getMessager().get("guiTitle"), page + 1);
+        String rawTitle = getMessager().get("guiTitle");
+        String guiTitle = rawTitle != null ? rawTitle.replace("%s", String.valueOf(page + 1)) : "Rewards - Page " + (page + 1);
 
-        log.debug("Creating 54-slot inventory with title: '" + guiTitle + "'");
         Inventory gui = Bukkit.createInventory(null, 54, guiTitle);
 
-        log.debug("Populating GUI with rewards from index " + startIndex + " to " + (endIndex - 1));
+        List<Map<String, String>> allRewards = getFetchers().getRewardsList();
+
+        List<String> categories = new ArrayList<>();
+        categories.add("All");
+        for (Map<String, String> r : allRewards) {
+            String cat = r.getOrDefault("category", "Default");
+            if (!categories.contains(cat)) categories.add(cat);
+        }
+
+        for (int i = 0; i < 9; i++) {
+            if (i < categories.size()) {
+                String catName = categories.get(i);
+                boolean isActive = catName.equals(category);
+
+                ItemStack catItem = new ItemStack(isActive ? Material.ENCHANTED_BOOK : Material.BOOK);
+                ItemMeta meta = catItem.getItemMeta();
+                if (meta != null) {
+                    meta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + catName);
+                    if (isActive) {
+                        meta.setLore(Collections.singletonList(ChatColor.GREEN + "● Selected"));
+                    } else {
+                        meta.setLore(Collections.singletonList(ChatColor.GRAY + "Click to filter"));
+                    }
+                    catItem.setItemMeta(meta);
+                }
+                gui.setItem(i, catItem);
+            } else {
+                gui.setItem(i, createFiller());
+            }
+        }
+
+        List<Map<String, String>> filteredRewards = new ArrayList<>();
+        for (Map<String, String> r : allRewards) {
+            if (category.equals("All") || r.getOrDefault("category", "Default").equals(category)) {
+                filteredRewards.add(r);
+            }
+        }
+
+        int itemsPerPage = 36;
+        int maxPage = Math.max(0, (filteredRewards.size() - 1) / itemsPerPage);
+        if (page > maxPage) page = maxPage;
+        getPlayerPages().put(uuid, page);
+
+        int startIndex = page * itemsPerPage;
+        int endIndex = Math.min(startIndex + itemsPerPage, filteredRewards.size());
+
         for (int i = startIndex; i < endIndex; i++) {
-            Map<String, String> reward = getRewardAt(i);
-
-            if (reward == null) {
-                log.debug("Reward at index " + i + " is null. Skipping.");
-                continue;
-            }
-
-            String name = String.valueOf(reward.getOrDefault("name", "Unknown"));
-            String description = String.valueOf(reward.getOrDefault("description", ""));
+            Map<String, String> reward = filteredRewards.get(i);
+            String name = reward.getOrDefault("name", "Unknown");
+            String description = reward.getOrDefault("description", "");
             int cost = 0;
+            try { cost = Integer.parseInt(reward.getOrDefault("cost", "0")); } catch (Exception ignored) {}
 
-            try {
-                cost = Integer.parseInt(String.valueOf(reward.getOrDefault("cost", "0")));
-            } catch (NumberFormatException e) {
-                log.debug("Failed to parse cost for reward '" + name + "' at index " + i + ". Defaulting to 0. Raw value: " + reward.get("cost"));
-            }
-
-            log.debug("Constructing ItemStack for reward: '" + name + "' (Cost: " + cost + ")");
             ItemStack chest = new ItemStack(Material.CHEST);
             ItemMeta meta = chest.getItemMeta();
-
             if (meta != null) {
                 meta.setDisplayName(ChatColor.YELLOW + name);
-
                 List<String> lore = new ArrayList<>();
-                lore.add(ChatColor.GOLD + String.valueOf(cost));
-
-                lore.addAll(wrapLore(description, 40, ChatColor.GRAY));
-
+                lore.add(ChatColor.GOLD + "Cost: " + cost + " bits");
+                lore.addAll(wrapLore(description));
                 meta.setLore(lore);
                 chest.setItemMeta(meta);
             }
-
-            int slot = i - startIndex;
-            gui.setItem(slot, chest);
-            log.debug("Placed reward '" + name + "' in GUI slot " + slot);
+            gui.setItem(9 + (i - startIndex), chest);
         }
+
+        for (int i = 45; i < 54; i++) gui.setItem(i, createFiller());
 
         if (page > 0) {
-            log.debug("Page is > 0. Adding 'Previous Page' button at slot 45.");
             gui.setItem(45, createButton(getMessager().get("previousPage")));
         }
-
         if (page < maxPage) {
-            log.debug("Page is < maxPage. Adding 'Next Page' button at slot 53.");
             gui.setItem(53, createButton(getMessager().get("nextPage")));
         }
 
-        log.debug("Opening inventory for Bukkit player: " + bukkitPlayer.getName());
         bukkitPlayer.openInventory(gui);
-    }
-
-
-    /**
-     * Wrap a lore with color
-     */
-    private List<String> wrapLore(String text, int lineLength, ChatColor color) {
-        List<String> wrapped = new ArrayList<>();
-        if (text == null || text.isBlank()) {
-            return wrapped;
-        }
-
-        String[] words = text.split(" ");
-        StringBuilder currentLine = new StringBuilder(color.toString());
-
-        for (String word : words) {
-            if (currentLine.length() - 2 + word.length() > lineLength) {
-                wrapped.add(currentLine.toString().trim());
-                currentLine = new StringBuilder(color.toString());
-            }
-            currentLine.append(word).append(" ");
-        }
-
-        wrapped.add(currentLine.toString().trim());
-        return wrapped;
-    }
-
-    private ItemStack createButton(String name) {
-        ItemStack item = new ItemStack(Material.ARROW);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName(name);
-            item.setItemMeta(meta);
-        }
-        return item;
     }
 
     // Listener
@@ -148,14 +146,12 @@ public class RewardsGUI extends CoreRewardsGUI implements Listener {
         if (!(event.getWhoClicked() instanceof Player)) return;
 
         Player bukkitPlayer = (Player) event.getWhoClicked();
-
         Inventory clickedInventory = event.getClickedInventory();
         if (clickedInventory == null) return;
 
         InventoryView view = event.getView();
         String title;
         try {
-            // Supporto legacy cross-version
             Method getTitle = InventoryView.class.getMethod("getTitle");
             getTitle.setAccessible(true);
             title = ChatColor.stripColor((String) getTitle.invoke(view));
@@ -164,8 +160,9 @@ public class RewardsGUI extends CoreRewardsGUI implements Listener {
         }
 
         RPlayer player = new SpigotPlayer(bukkitPlayer);
+        UUID uuid = bukkitPlayer.getUniqueId();
 
-        // CONFIRMATION BUY
+        // ------------------ CONFIRM PURCHASE ------------------
         String confirmTitleExpected = ChatColor.stripColor(getMessager().get("confirmTitle"));
         if (confirmTitleExpected != null && confirmTitleExpected.contains(" ")) {
             confirmTitleExpected = confirmTitleExpected.split(" ")[1];
@@ -175,25 +172,25 @@ public class RewardsGUI extends CoreRewardsGUI implements Listener {
             event.setCancelled(true);
             int slot = event.getRawSlot();
 
-            ConfirmData data = getPendingConfirmations().get(player.getUniqueId());
+            ConfirmData data = getPendingConfirmations().get(uuid);
             if (data == null) return;
 
-            if (slot == 11) {
+            if (slot == 11) { // YES
                 String rewardId = data.reward.get("id");
                 if (rewardId != null && !rewardId.isEmpty())
                     getBuy().send(player, rewardId);
 
-                getPendingConfirmations().remove(player.getUniqueId());
+                getPendingConfirmations().remove(uuid);
                 bukkitPlayer.closeInventory();
-            } else if (slot == 15) {
-                open(player, data.page);
-                getPendingConfirmations().remove(player.getUniqueId());
+            } else if (slot == 15) { // NO
+                String cat = playerCategories.getOrDefault(uuid, "All");
+                openCategoryGUI(bukkitPlayer, data.page, cat);
+                getPendingConfirmations().remove(uuid);
             }
-
             return;
         }
 
-        // ALL REWARDS
+        // ------------------ REWARDS / CATEGORY MENU ------------------
         String guiTitleExpected = ChatColor.stripColor(getMessager().get("guiTitle"));
         if (guiTitleExpected != null && guiTitleExpected.contains(" ")) {
             guiTitleExpected = guiTitleExpected.split(" ")[1];
@@ -205,26 +202,54 @@ public class RewardsGUI extends CoreRewardsGUI implements Listener {
         int slot = event.getRawSlot();
         if (slot < 0 || slot >= clickedInventory.getSize()) return;
 
-        Integer currentPage = getPlayerPages().get(player.getUniqueId());
-        if (currentPage == null) return;
+        String currentCategory = playerCategories.getOrDefault(uuid, "All");
+        Integer currentPage = getPlayerPages().getOrDefault(uuid, 0);
 
-        if (slot == 45 && currentPage > 0) {
-            open(player, currentPage - 1);
-            return;
-        } else if (slot == 53) {
-            List<Map<String, String>> rewardsData = getFetchers().getRewardsList();
-            int maxPage = (rewardsData.size() - 1) / getItemsPerPage();
-            if (currentPage < maxPage) open(player, currentPage + 1);
+        // Click on a Category (Slots 0-8)
+        if (slot >= 0 && slot <= 8) {
+            List<Map<String, String>> allRewards = getFetchers().getRewardsList();
+            List<String> categories = new ArrayList<>();
+            categories.add("All");
+            for (Map<String, String> r : allRewards) {
+                String cat = r.getOrDefault("category", "Default");
+                if (!categories.contains(cat)) categories.add(cat);
+            }
+            if (slot < categories.size()) {
+                String newCategory = categories.get(slot);
+                if (!newCategory.equals(currentCategory)) {
+                    openCategoryGUI(bukkitPlayer, 0, newCategory); // Reset to page 0 when switching categories
+                }
+            }
             return;
         }
 
-        List<Map<String, String>> rewardsData = getFetchers().getRewardsList();
-        int startIndex = currentPage * getItemsPerPage();
-        int index = startIndex + slot;
-        if (index >= rewardsData.size()) return;
-        Map<String, String> selectedReward = rewardsData.get(index);
+        List<Map<String, String>> filteredRewards = new ArrayList<>();
+        for (Map<String, String> r : getFetchers().getRewardsList()) {
+            if (currentCategory.equals("All") || r.getOrDefault("category", "Default").equals(currentCategory)) {
+                filteredRewards.add(r);
+            }
+        }
 
-        openConfirmation(bukkitPlayer, selectedReward, currentPage);
+        // Click on pagination buttons (Slots 45 and 53)
+        if (slot == 45 && currentPage > 0) {
+            openCategoryGUI(bukkitPlayer, currentPage - 1, currentCategory);
+            return;
+        } else if (slot == 53) {
+            int maxPage = Math.max(0, (filteredRewards.size() - 1) / 36);
+            if (currentPage < maxPage) {
+                openCategoryGUI(bukkitPlayer, currentPage + 1, currentCategory);
+            }
+            return;
+        }
+
+        // Click on a reward (Slots 9-44)
+        if (slot >= 9 && slot <= 44) {
+            int index = (currentPage * 36) + (slot - 9);
+            if (index < filteredRewards.size()) {
+                Map<String, String> selectedReward = filteredRewards.get(index);
+                openConfirmation(bukkitPlayer, selectedReward, currentPage);
+            }
+        }
     }
 
     private void openConfirmation(Player player, Map<String, String> reward, int previousPage) {
@@ -232,16 +257,14 @@ public class RewardsGUI extends CoreRewardsGUI implements Listener {
 
         String name = reward.getOrDefault("name", "Unknown");
         int cost = 0;
-        try {
-            cost = Integer.parseInt(reward.getOrDefault("cost", "0"));
-        } catch (Exception ignored) {}
+        try { cost = Integer.parseInt(reward.getOrDefault("cost", "0")); } catch (Exception ignored) {}
 
         ItemStack info = new ItemStack(Material.CHEST);
         ItemMeta meta = info.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(ChatColor.YELLOW + name);
             meta.setLore(Arrays.asList(
-                    ChatColor.GOLD + "" + cost,
+                    ChatColor.GOLD + "Cost: " + cost,
                     ChatColor.GRAY + reward.getOrDefault("description", "")
             ));
             info.setItemMeta(meta);
@@ -268,13 +291,63 @@ public class RewardsGUI extends CoreRewardsGUI implements Listener {
         player.openInventory(confirmGUI);
     }
 
+    private List<String> wrapLore(String text) {
+        List<String> wrapped = new ArrayList<>();
+        if (text == null || text.isBlank()) return wrapped;
+        String[] words = text.split(" ");
+        StringBuilder currentLine = new StringBuilder(ChatColor.GRAY.toString());
+        for (String word : words) {
+            if (currentLine.length() - 2 + word.length() > 40) {
+                wrapped.add(currentLine.toString().trim());
+                currentLine = new StringBuilder(ChatColor.GRAY.toString());
+            }
+            currentLine.append(word).append(" ");
+        }
+        wrapped.add(currentLine.toString().trim());
+        return wrapped;
+    }
+
+    private ItemStack createButton(String name) {
+        ItemStack item = new ItemStack(Material.ARROW);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(name);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    /**
+     * Creates a black glass pane compatible with both old and new Minecraft versions
+     * to decorate empty slots in the category menu.
+     */
+    @SuppressWarnings("deprecation")
+    private ItemStack createFiller() {
+        int v = 8;
+        try { v = Integer.parseInt(Bukkit.getBukkitVersion().split("\\.")[1]); } catch (Exception ignored) {}
+        if (v >= 13) {
+            try { return new ItemStack(Material.valueOf("BLACK_STAINED_GLASS_PANE")); }
+            catch (IllegalArgumentException e) {
+                // Fallback if somehow 1.13+ doesn't have it
+                return new ItemStack(Material.valueOf("STAINED_GLASS_PANE"), 1, (short) 15);
+            }
+        }
+        // Legacy support < 1.13
+        return new ItemStack(Material.valueOf("STAINED_GLASS_PANE"), 1, (short) 15);
+    }
+
+    @SuppressWarnings("deprecation")
     private ItemStack coloredWool(boolean red) {
         int v = 8;
         try { v = Integer.parseInt(Bukkit.getBukkitVersion().split("\\.")[1]); } catch (Exception ignored) {}
         if (v >= 13) {
             try { return new ItemStack(Material.valueOf((red ? "RED" : "GREEN") + "_WOOL")); }
-            catch (IllegalArgumentException e) { return new ItemStack(Material.WOOL); }
+            catch (IllegalArgumentException e) {
+                // Fallback
+                return new ItemStack(Material.valueOf("WOOL"), 1, (short)(red ? 14 : 5));
+            }
         }
-        return new ItemStack(Material.WOOL, 1, (red ? DyeColor.RED.getWoolData() : DyeColor.GREEN.getWoolData()));
+        // Legacy support < 1.13
+        return new ItemStack(Material.valueOf("WOOL"), 1, (short)(red ? 14 : 5));
     }
 }

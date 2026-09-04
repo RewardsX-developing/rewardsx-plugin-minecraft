@@ -1,5 +1,7 @@
 package net.r_developing.rewardsx.api.core.rewards;
 
+import lombok.Getter;
+
 /**
  * Represents a single command to execute as part of a reward grant.
  *
@@ -45,9 +47,11 @@ public record RewardCommand(
          */
         boolean requireOnline
 ) {
-    // Record automatically provides:
-    //   - Constructor: RewardCommand(String command, boolean requireOnline)
-    //   - Getters: command(), requireOnline()
-    //   - equals, hashCode, toString
-    // All fields are implicitly final and immutable.
+    public String getCommand() {
+        return command;
+    }
+
+    public boolean isRequireOnline() {
+        return requireOnline;
+    }
 }

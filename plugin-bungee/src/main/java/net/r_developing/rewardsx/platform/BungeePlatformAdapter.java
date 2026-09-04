@@ -1,14 +1,12 @@
 package net.r_developing.rewardsx.platform;
 
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.r_developing.rewardsx.Plugin;
 import net.r_developing.rewardsx.api.core.buy.Buy;
 import net.r_developing.rewardsx.api.core.commands.CoreCommands;
 import net.r_developing.rewardsx.api.core.gui.PlatformGUI;
-import net.r_developing.rewardsx.api.core.platform.PlatformAdapter;
-import net.r_developing.rewardsx.api.core.platform.PlatformLogger;
-import net.r_developing.rewardsx.api.core.platform.PlatformPlugin;
-import net.r_developing.rewardsx.api.core.platform.PlatformScheduler;
+import net.r_developing.rewardsx.api.core.platform.*;
 import net.r_developing.rewardsx.api.core.proxy.AbstractProxyListener;
 import net.r_developing.rewardsx.commands.Commands;
 import net.r_developing.rewardsx.listener.BungeePluginMessageListener;
@@ -48,6 +46,11 @@ public class BungeePlatformAdapter implements PlatformAdapter {
     }
 
     @Override
+    public PlatformCommandExecutor getCommandExecutor() {
+        return plugin.getPlatformCommandExecutor();
+    }
+
+    @Override
     public PlatformGUI getGUI() {
         return gui;
     }
@@ -72,6 +75,12 @@ public class BungeePlatformAdapter implements PlatformAdapter {
         ProxyServer.getInstance().getPluginManager().registerListener(plugin,
                 new BungeePluginMessageListener(logger, buy)
         );
+    }
+
+    @Override
+    public boolean isPlayerOnline(String username) {
+        ProxiedPlayer p = plugin.getProxy().getPlayer(username);
+        return p != null;
     }
 
     @Override

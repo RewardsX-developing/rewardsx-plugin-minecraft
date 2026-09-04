@@ -3,6 +3,7 @@ package net.r_developing.rewardsx.platform;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Listener;
+import net.r_developing.rewardsx.Plugin;
 import net.r_developing.rewardsx.api.core.platform.RServer;
 import net.r_developing.rewardsx.api.core.player.RPlayer;
 import net.r_developing.rewardsx.api.core.player.RPlayerOffline;
@@ -12,8 +13,10 @@ import java.util.UUID;
 
 public class BungeeServer implements RServer {
     private final ProxyServer proxy;
+    private final Plugin plugin;
 
-    public BungeeServer(ProxyServer proxy) {
+    public BungeeServer(Plugin plugin, ProxyServer proxy) {
+        this.plugin = plugin;
         this.proxy = proxy;
     }
 
@@ -62,7 +65,7 @@ public class BungeeServer implements RServer {
             if (obj instanceof Listener) {
                 Listener l = (Listener) obj;
                 proxy.getPluginManager().registerListener(
-                        proxy.getPluginManager().getPlugin("RewardsX_Bungee"),
+                        plugin,
                         l
                 );
             } else {

@@ -1,5 +1,6 @@
 package net.r_developing.rewardsx.api.core.rewards;
 
+import lombok.Getter;
 import net.r_developing.rewardsx.api.core.buy.Buy;
 import net.r_developing.rewardsx.api.core.network.Api;
 import net.r_developing.rewardsx.api.core.platform.PlatformLogger;
@@ -15,10 +16,14 @@ public class RewardFetcher {
     private final PlatformLogger logger;
     private final Buy buy;
 
-    public RewardFetcher(Api api, PlatformLogger logger, Buy buy) {
+    @Getter
+    private final RewardQueueManager queueManager;
+
+    public RewardFetcher(Api api, PlatformLogger logger, Buy buy, RewardQueueManager queueManager) {
         this.api = api;
         this.logger = logger;
         this.buy = buy;
+        this.queueManager = queueManager;
     }
 
     public void fetchPendingRewards(String platformId, String serverToken, Set<String> inFlight, RewardConfirmCallback callback) {

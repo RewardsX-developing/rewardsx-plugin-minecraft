@@ -2,6 +2,7 @@ package net.r_developing.rewardsx.platform;
 
 import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.command.CommandMeta;
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import lombok.Getter;
@@ -9,15 +10,13 @@ import net.r_developing.rewardsx.Plugin;
 import net.r_developing.rewardsx.api.core.buy.Buy;
 import net.r_developing.rewardsx.api.core.commands.CoreCommands;
 import net.r_developing.rewardsx.api.core.gui.PlatformGUI;
-import net.r_developing.rewardsx.api.core.platform.PlatformAdapter;
-import net.r_developing.rewardsx.api.core.platform.PlatformLogger;
-import net.r_developing.rewardsx.api.core.platform.PlatformPlugin;
-import net.r_developing.rewardsx.api.core.platform.PlatformScheduler;
+import net.r_developing.rewardsx.api.core.platform.*;
 import net.r_developing.rewardsx.api.core.proxy.AbstractProxyListener;
 import net.r_developing.rewardsx.commands.Commands;
 import net.r_developing.rewardsx.listener.VelocityPluginMessageListener;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 public class VelocityPlatformAdapter implements PlatformAdapter {
     public static final MinecraftChannelIdentifier CHANNEL = MinecraftChannelIdentifier.from("rewardsx:command");
@@ -60,6 +59,11 @@ public class VelocityPlatformAdapter implements PlatformAdapter {
     }
 
     @Override
+    public PlatformCommandExecutor getCommandExecutor() {
+        return plugin.getPlatformCommandExecutor();
+    }
+
+    @Override
     public PlatformGUI getGUI() {
         return gui;
     }
@@ -94,6 +98,11 @@ public class VelocityPlatformAdapter implements PlatformAdapter {
                 .build();
 
         commandManager.register(meta, new Commands(coreCommands, logger, proxyServer));
+    }
+
+    @Override
+    public boolean isPlayerOnline(String username) {
+        return proxyServer.getPlayer(username).isPresent();
     }
 
     @Override

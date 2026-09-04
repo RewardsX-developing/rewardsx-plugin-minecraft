@@ -9,7 +9,9 @@ import net.r_developing.rewardsx.api.core.network.Translator;
 import net.r_developing.rewardsx.api.core.platform.*;
 import net.r_developing.rewardsx.api.core.proxy.AbstractProxyListener;
 import net.r_developing.rewardsx.api.core.proxy.ProxySender;
+import net.r_developing.rewardsx.api.core.rewards.RewardQueueManager;
 import net.r_developing.rewardsx.config.BungeeYamlConfig;
+import net.r_developing.rewardsx.listener.BungeeJoinListener;
 import net.r_developing.rewardsx.logger.BungeeLogger;
 import net.r_developing.rewardsx.platform.BungeeCommandExecutor;
 import net.r_developing.rewardsx.platform.BungeePlatformAdapter;
@@ -34,7 +36,7 @@ public class BungeeRewardsxCore extends RewardsXCore {
         this.plugin = plugin;
         this.logger = new BungeeLogger(plugin, getMainConfigWrapper());
         this.scheduler = new BungeeSchedulerWrapper(plugin);
-        this.server = new BungeeServer(ProxyServer.getInstance());
+        this.server = new BungeeServer(plugin, ProxyServer.getInstance());
         this.adapter = new BungeePlatformAdapter(plugin, logger, buy);
         this.api = new Api();
 
@@ -45,6 +47,7 @@ public class BungeeRewardsxCore extends RewardsXCore {
     protected File getDataFolder() {
         return plugin.getDataFolder();
     }
+
 
     @Override
     protected PlatformLogger getPlatformLogger() {
@@ -59,6 +62,11 @@ public class BungeeRewardsxCore extends RewardsXCore {
     @Override
     protected RServer getRServer() {
         return server;
+    }
+
+    @Override
+    protected RewardQueueManager getQueueManager() {
+        return queueManager;
     }
 
     @Override

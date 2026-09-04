@@ -130,9 +130,11 @@ public class CoreCommands {
                     // A response containing "platform_id" means the key was accepted.
                     if (response != null && response.containsKey("platform_id")) {
                         String platformName = (String) response.get("name");
+                        String platformId = (String) response.get("network_id");
 
                         // Persist the key so it is reused on the next startup.
                         config.setPlatformCredentials("platform_key", secretKey);
+                        config.setPlatformCredentials("platform_id", platformId);
 
                         this.isProxy = platform.isProxyOrBungee();
 
@@ -238,13 +240,21 @@ public class CoreCommands {
                 // Guard against a non-player sender being routed here by mistake.
                 if (sender.isPlayer()) {
                     if (args.length > 1) {
-                        // "/rewardsx buy <name>" - skip the GUI and go straight to that reward.
-                        buy.send(sender, args[1]);
+                        String requestedName = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+
+                        Optional<Map<String, String>> targetReward = fetcher.getRewardsList().stream()
+                                .filter(r -> r.getOrDefault("name", "").equalsIgnoreCase(requestedName))
+                                .findFirst();
+
+                        if (targetReward.isPresent()) {
+                            String rewardId = targetReward.get().get("id");
+                            buy.send(sender, rewardId);
+                        } else {
+                            sender.sendMessage("§cReward '" + requestedName + "' not found.");
+                        }
                     } else {
                         // No reward named - open the browse GUI.
                         if (isProxy) {
-                            // On a proxy there is no inventory to open, so ask the
-                            // backend server the player is on to open it via plugin message.
                             proxySender.sendCommand(sender, "OPENGUI", "");
                         } else {
                             rewardsGUI.open(sender);
@@ -278,18 +288,27 @@ public class CoreCommands {
      * Note this does not filter by permission or by isCommandsEnabled.
      */
     public List<String> getTabCompletions(String[] args) {
-        if (args.length != 1) return new ArrayList<>();
-
-        List<String> suggestions = new ArrayList<>(Arrays.asList("reload", "version"));
-        if (platformValid) {
-            suggestions.add("buy");
+        if (args.length == 1) {
+            List<String> suggestions = new ArrayList<>(Arrays.asList("reload", "version"));
+            if (platformValid) {
+                suggestions.add("buy");
+            }
+            return suggestions.stream()
+                    .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
+                    .sorted()
+                    .collect(Collectors.toList());
         }
 
-        // Prefix-match what the player has typed so far (case-insensitive), then sort.
-        return suggestions.stream()
-                .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
-                .sorted()
-                .collect(Collectors.toList());
+        if (args.length == 2 && args[0].equalsIgnoreCase("buy") && platformValid) {
+            return fetcher.getRewardsList().stream()
+                    .map(r -> r.getOrDefault("name", ""))
+                    .map(name -> name.replace(" ", "_"))
+                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .sorted()
+                    .collect(Collectors.toList());
+        }
+
+        return new ArrayList<>();
     }
 
     /** "rewardsx.admin" acts as a wildcard that grants every specific permission. */

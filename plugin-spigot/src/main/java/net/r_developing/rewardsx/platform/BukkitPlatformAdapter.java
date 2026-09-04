@@ -2,10 +2,7 @@ package net.r_developing.rewardsx.platform;
 
 import net.r_developing.rewardsx.Plugin;
 import net.r_developing.rewardsx.api.core.gui.PlatformGUI;
-import net.r_developing.rewardsx.api.core.platform.PlatformAdapter;
-import net.r_developing.rewardsx.api.core.platform.PlatformLogger;
-import net.r_developing.rewardsx.api.core.platform.PlatformPlugin;
-import net.r_developing.rewardsx.api.core.platform.PlatformScheduler;
+import net.r_developing.rewardsx.api.core.platform.*;
 import net.r_developing.rewardsx.api.core.commands.CoreCommands;
 import net.r_developing.rewardsx.api.core.proxy.AbstractProxyListener;
 import net.r_developing.rewardsx.commands.Commands;
@@ -15,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -50,6 +48,11 @@ public class BukkitPlatformAdapter implements PlatformAdapter {
     @Override
     public PlatformPlugin getInstance() {
         return new BukkitPlatformPlugin(plugin);
+    }
+
+    @Override
+    public PlatformCommandExecutor getCommandExecutor() {
+        return plugin.getPlatformCommandExecutor();
     }
 
     @Override
@@ -97,6 +100,12 @@ public class BukkitPlatformAdapter implements PlatformAdapter {
         } catch (Exception e) {
             logger.warning("Failed to register command via reflection: " + e.getMessage());
         }
+    }
+
+    @Override
+    public boolean isPlayerOnline(String username) {
+        Player p = Bukkit.getPlayerExact(username);
+        return p != null;
     }
 
     @Override
