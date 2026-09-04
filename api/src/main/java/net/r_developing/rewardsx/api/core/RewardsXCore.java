@@ -229,8 +229,8 @@ public abstract class RewardsXCore {
             if(interval < 60){
                 getPlatformLogger().warning("WARNING: The fetch_interval in config must be over 60. Your fetch_interval: " + interval + ". Setting it as 60.");
                 interval = 60;
-                config.getMessagesConfig().set("fetch_interval", 60);
-                config.getMessagesConfig().save();
+                config.getMainConfig().set("fetch_interval", 60);
+                config.getMainConfig().save();
             }
 
             this.queueManager = new RewardQueueManager(

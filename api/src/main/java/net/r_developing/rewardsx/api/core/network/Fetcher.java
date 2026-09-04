@@ -151,8 +151,8 @@ public class Fetcher {
         if(interval < 60){
             logger.warning("WARNING: The fetch_interval in config must be over 60. Your fetch_interval: " + interval + ". Setting it as 60.");
             interval = 60;
-            config.getMessagesConfig().set("fetch_interval", 60);
-            config.getMessagesConfig().save();
+            config.getMainConfig().set("fetch_interval", 60);
+            config.getMainConfig().save();
         }
         this.intervalTicks = interval * 20L;
         start();
