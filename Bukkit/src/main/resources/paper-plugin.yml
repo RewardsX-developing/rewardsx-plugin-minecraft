@@ -1,11 +1,11 @@
 name: RewardsX
-main: net.r_developing.rewardsx.Main
-version: 2026.05.09
+version: '${project.version}'
 api-version: '1.19'
 description: RewardsX Minecraft plugin for Paper
 authors:
   - R_Developing
 
+main: net.r_developing.rewardsx.Plugin
 dependencies:
   server:
     PlaceholderAPI:

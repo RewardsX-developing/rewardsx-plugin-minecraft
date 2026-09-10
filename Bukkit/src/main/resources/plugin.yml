@@ -1,6 +1,6 @@
 name: RewardsX
-version: '2026.05.09'
-main: net.r_developing.rewardsx.Main
+version: '${project.version}'
+main: net.r_developing.rewardsx.Plugin
 description: RewardsX Minecraft Plugin for Spigot
 authors:
   - R_Developing
