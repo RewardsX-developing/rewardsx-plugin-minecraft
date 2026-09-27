@@ -88,9 +88,10 @@ public class Buy {
         });
     }
 
-    public void sendPurchaseLink(String token, RPlayer player){
-        String url = BASE_URL + "confirm-purchase/" + token;
-        player.sendMessage("§aConfirm purchase here: §e" + url);
+    public void sendPurchaseLink(String token, RPlayer player) {
+        api.shortenPurchaseLink(token, url -> {
+            player.sendMessage("§aConfirm purchase here: §e" + url);
+        });
     }
 
     /**
