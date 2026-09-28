@@ -19,7 +19,7 @@ import java.nio.file.Path;
 @com.velocitypowered.api.plugin.Plugin(
         id = "rewardsx",
         name = "RewardsX",
-        version = "2026.09.01",
+        version = "2026.09.29",
         description = "RewardsX Minecraft plugin for Velocity",
         authors = {"R_Developing"}
 )
