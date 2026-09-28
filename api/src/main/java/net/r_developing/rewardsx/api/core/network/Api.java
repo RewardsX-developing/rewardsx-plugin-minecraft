@@ -11,6 +11,21 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 
+
+/**
+ * HTTP client for the RewardsX backend API.
+ *
+ * <p>Sends requests to <a href="https://api.rewardsx.net/v2/"></a> and handles responses.
+ * All requests include platform credentials (id and key) as headers, and are
+ * executed asynchronously with a callback pattern. Responses are parsed from JSON
+ * and converted to nested Maps/Lists for easy access.
+ *
+ * <p>Supports GET and POST methods. GET requests put payload data in query parameters;
+ * POST requests put payload in the JSON body.
+ *
+ * <p>Thread-safe - OkHttpClient handles all async work internally, and callbacks
+ * are invoked off the main thread. The plugin should not block on these callbacks.
+ */
 public class Api {
     /** Base URL for all API requests. */
     public static final String BASE_URL = "https://api.rewardsx.net/v2/";
@@ -21,6 +36,10 @@ public class Api {
     /** HTTP client (connection pooling, retry logic). */
     private final OkHttpClient client;
 
+    /**
+     * Platform reference - used to read id/key and check debug mode.
+     * Injected after construction via the setter.
+     */
     @Setter
     @Getter
     public Platform platform = null;
@@ -36,6 +55,14 @@ public class Api {
         this.client = new OkHttpClient();
     }
 
+    /**
+     * Initializes the API with credentials from the platform.
+     *
+     * <p>Must be called once before any send() calls. Extracts the platform ID
+     * and secret key from the Platform object and validates that both are present.
+     *
+     * @return true if initialization succeeded, false if missing credentials
+     */
     public boolean init() {
         if (platform == null) {
             System.err.println("Api.init() called but platform is null!");
@@ -175,6 +202,23 @@ public class Api {
         send(method, endpoint, null, payload, result);
     }
 
+
+    /**
+     * Sends an HTTP request to the API and processes the JSON response.
+     *
+     * <p>This is the high-level entry point. It:
+     *   1. Validates that the API is initialized (id and key are set)
+     *   2. Adds the platform ID to the payload
+     *   3. Calls sendRequest() to execute the HTTP call async
+     *   4. Parses the JSON response into nested Maps and Lists
+     *   5. Invokes the result callback with the parsed data (or null on failure)
+     *
+     * @param method    "GET" or "POST"
+     * @param endpoint  the API endpoint (e.g. "complete-buy"), appended to BASE_URL
+     * @param headers   custom HTTP headers to include in the request (can be null)
+     * @param payload   request data (will be null-checked and converted to empty map if needed)
+     * @param result    callback to invoke with the parsed response (maybe null on error)
+     */
     public void send(String method, String endpoint, Map<String, String> headers, Map<String, Object> payload, Consumer<Map<String, Object>> result) {
         if (id == null || key == null) {
             if (platform.isDebug()) System.err.println("API not initialized. Call init(platform, apiKey) first");
@@ -210,6 +254,24 @@ public class Api {
         });
     }
 
+    /**
+     * Low-level HTTP request execution.
+     *
+     * <p>Builds an OkHttp Request with:
+     *   - Authorization header (the secret key)
+     *   - Platform header (the platform ID)
+     *   - Custom headers (if provided)
+     *   - URL with query parameters (for GET) or JSON body (for POST)
+     *
+     * <p>Enqueues the request async - when the response arrives, onSuccess is
+     * invoked with the response body string (or null on error).
+     *
+     * @param method      "GET" or "POST"
+     * @param endpoint    the API path (e.g. "complete-buy")
+     * @param headers     custom HTTP headers to append (can be null)
+     * @param payload     request data
+     * @param onSuccess   callback to invoke with the response body (or null on error)
+     */
     private void sendRequest(String method, String endpoint, Map<String, String> headers, Map<String, Object> payload, Consumer<String> onSuccess) {
         try {
             Request.Builder requestBuilder = new Request.Builder()
@@ -290,6 +352,22 @@ public class Api {
         }
     }
 
+    /**
+     * Recursively converts a Gson JsonElement to a Java object.
+     *
+     * <p>Handles:
+     *   - null -> null
+     *   - primitives (String, number, boolean) -> String
+     *   - arrays -> List&lt;Object&gt;
+     *   - objects -> Map&lt;String, Object&gt;
+     *
+     * <p>Note: numbers and booleans are converted to Strings (lossy for numbers).
+     * If the API returns typed data, consider using Gson's TypeToken and proper
+     * model classes instead.
+     *
+     * @param element a JsonElement from a parsed JsonObject
+     * @return the converted Java object
+     */
     private Object convertJsonElement(JsonElement element) {
         if (element.isJsonNull()) {
             return null;
